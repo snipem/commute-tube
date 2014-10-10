@@ -8,7 +8,7 @@ import logging
 import json
 from pprint import pprint
 
-debug = True
+debug = False
 
 log = logging.getLogger()
 
