@@ -28,7 +28,8 @@ pathToDownloadFolder = linkToPen+downloadFolder
 
 if os.path.ismount(linkToPen) == False:
 	print ("There is no USB pen mounted under " + linkToPen + ". Exiting.")
-	sys.exit(-1)
+	#TODO exit when not mounted
+	#sys.exit(-1)
 
 if os.path.exists(pathToDownloadFolder) == False:
 	print ("Creating folder "+pathToDownloadFolder)
