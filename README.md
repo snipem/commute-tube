@@ -17,9 +17,9 @@ Best way would be to use a FAT32 formatted USB pen. Since there is a good workin
 
 In order to do so, extract the UUID of your USB pen and put it into the `/etc/fstab` configuration. The user flag will allow any user to mount and unmount the pen by using `mount /mnt/commuteUSB` or `umount /mnt/commuteUSB` respectively:
 
-´´´
+```shell
 [matze@beatle ~]$ sudo blkid 
 /dev/sdd1: LABEL="KINGSTON" UUID="25E6-B035" TYPE="vfat" PARTUUID="c3072e18-01" 
 [matze@beatle ~]$ cat /etc/fstab 
 UUID=25E6-B035    /mnt/commuteUSB  vfat   user,rw,umask=000              0  0
-´´´
+```
