@@ -63,7 +63,7 @@ for source in config['source']:
 	ydl.params['nooverwrites'] = True
 	ydl.params['download_archive'] = "already_downloaded.txt"
 	#ydl.params['logger'] = ydlLog
-	outtmpl = downloadFolder + u'/%(title)s-%(id)s.%(ext)s'
+	outtmpl = pathToDownloadFolder + u'/%(title)s-%(id)s.%(ext)s'
 	ydl.params['outtmpl'] = outtmpl
 
 	if debug == True:
