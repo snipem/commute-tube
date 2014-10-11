@@ -1,4 +1,9 @@
 {
+  "pen":
+  {
+  	"penPath" : "/mnt/commuteUSB",
+  	"downloadFolder" : "Download"
+  },
   "source": 
   [
 	  {
@@ -8,15 +13,11 @@
 	  },
 	  {
 	    "url": "https://www.youtube.com/playlist?list=PLykXdRRd47IXBd5C-CY0UwR6SE61OPjR0",
-	    "playlistend": 3
+	    "playlistend": 10
 	  },
 	  {
 	    "url": "https://www.youtube.com/playlist?list=PLykXdRRd47IX_5gUChdhDjgKmQyZtRrC_",
-	    "playlistend": 3
-	  },
-	  {
-	    "url": "http://www.escapistmagazine.com/video-games/videos",
-	    "playlistend": 3
+	    "playlistend": 10
 	  }
   ]
 }
