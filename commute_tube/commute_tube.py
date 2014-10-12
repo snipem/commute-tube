@@ -26,7 +26,7 @@ class CommuteTube():
 
 	def __init__(self):
 
-		self.debug = True
+		self.debug = False
 		self.log = logging.getLogger()
 		self.ydlLog = logging.getLogger("youtube_dl")
 		self.config = self.getConfig()
