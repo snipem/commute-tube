@@ -86,18 +86,31 @@ class CommuteTube():
 
 		for source in self.config['source']:
 			
-			ydl.params = source
-			ydl.params['nooverwrites'] = True
-			ydl.params['download_archive'] = "already_downloaded.txt"
-			ydl.params['logger'] = self.ydlLog
-			outtmpl = self.pathToDownloadFolder + u'/%(uploader)s-%(title)s-%(id)s.%(ext)s'
-			ydl.params['outtmpl'] = outtmpl
+			try:
+				sourceUrl = source['url'].decode()
+				sourceDescription = ""
 
-			if self.debug == True:
-				self.log.debug("All downloads will be simulated since this is debug mode")
-				ydl.params['simulate'] = True
+				if (source['url'] != None):
+					sourceDescription = source['url']
 
-			ydl.download([source['url']])
+				self.log.info("Processing source: " + sourceDescription + " " + source['url'].decode())
+
+				ydl.params = source
+				ydl.params['nooverwrites'] = True
+				ydl.params['ignoreerrors'] = True
+				ydl.params['download_archive'] = "already_downloaded.txt"
+				ydl.params['logger'] = self.ydlLog
+				outtmpl = self.pathToDownloadFolder + u'/%(uploader)s-%(title)s-%(id)s.%(ext)s'
+				ydl.params['outtmpl'] = outtmpl
+
+				if self.debug == True:
+					self.log.debug("All downloads will be simulated since this is debug mode")
+					ydl.params['simulate'] = True
+
+				ydl.download([source['url']])
+
+			except Exception, e:
+				self.log.error ("Error while processing source " + e.message)
 
 		# Copy log file to USB pen
 		logFileDestination = self.pathToDownloadFolder+ "/" + self.logFile
