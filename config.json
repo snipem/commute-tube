@@ -7,15 +7,18 @@
   "source": 
   [
 	  {
+	  	"description" : "Giant Bomb Quick Look",
 	    "url": "https://www.youtube.com/user/therealgiantbomb",
 	    "playlistend": 3,
 	    "matchtitle": "Quick Look"
 	  },
 	  {
+	  	"description" : "Champions League on Sky",
 	    "url": "https://www.youtube.com/playlist?list=PLykXdRRd47IXBd5C-CY0UwR6SE61OPjR0",
 	    "playlistend": 10
 	  },
 	  {
+	  	"description" : "Europa League on Sky",
 	    "url": "https://www.youtube.com/playlist?list=PLykXdRRd47IX_5gUChdhDjgKmQyZtRrC_",
 	    "playlistend": 10
 	  }

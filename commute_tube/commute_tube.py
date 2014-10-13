@@ -89,11 +89,11 @@ class CommuteTube():
 			try:
 				sourceUrl = source['url'].decode()
 				sourceDescription = ""
+				
+				if ('description' in source):
+					sourceDescription = source['description'].decode()
 
-				if (source['url'] != None):
-					sourceDescription = source['url']
-
-				self.log.info("Processing source: " + sourceDescription + " " + source['url'].decode())
+				self.log.info("Processing source: " + sourceDescription + " " + sourceUrl)
 
 				ydl.params = source
 				ydl.params['nooverwrites'] = True
@@ -110,7 +110,7 @@ class CommuteTube():
 				ydl.download([source['url']])
 
 			except Exception, e:
-				self.log.error ("Error while processing source " + e.message)
+				self.log.error ("Error while processing source. Message: '" + e.message + "'")
 
 		# Copy log file to USB pen
 		logFileDestination = self.pathToDownloadFolder+ "/" + self.logFile
