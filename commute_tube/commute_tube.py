@@ -19,6 +19,7 @@ class CommuteTube():
 	downloadFolder = ""
 	pathToDownloadFolder = ""
 	logFile = "commute-tube.log"
+	mountAndUnmount = True
 
 	def getConfig(self):
 		json_data=open('config.json')
@@ -45,8 +46,8 @@ class CommuteTube():
 		self.config = self.getConfig()
 		self.penPath = self.config['pen']['penPath']
 		self.downloadFolder = self.config['pen']['downloadFolder']
-		self.mountAndUnmount = self.config['pen']['mountAndUnmount']
-
+		
+		if self.config['pen']['mountAndUnmount'] == "False" : self.mountAndUnmount = False
 		if self.config['pen']['debug'] == "True" : self.debug = True
 
 		self.pathToDownloadFolder = self.penPath+"/"+self.downloadFolder
