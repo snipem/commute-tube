@@ -153,6 +153,9 @@ class CommuteTube():
 			for fileDownloaded in filesDelta:
 				self.log.info("Downloaded: " + fileDownloaded)
 
+			diskSizeAfter = self.getRemainingDiskSizeInGigaByte()
+			self.log.info("Remaining disk size: %.2f GB" % diskSizeAfter)
+
 			# Copy log file to USB pen
 			logFileDestination = self.pathToDownloadFolder+ "/" + self.logFile
 			shutil.copyfile(self.logFile, logFileDestination)
