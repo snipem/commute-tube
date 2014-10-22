@@ -45,8 +45,9 @@ class CommuteTube():
 		self.config = self.getConfig()
 		self.penPath = self.config['pen']['penPath']
 		self.downloadFolder = self.config['pen']['downloadFolder']
+		self.mountAndUnmount = self.config['pen']['mountAndUnmount']
 
-		self.debug = False
+		if self.config['pen']['debug'] == "True" : self.debug = True
 
 		self.pathToDownloadFolder = self.penPath+"/"+self.downloadFolder
 			
@@ -67,13 +68,17 @@ class CommuteTube():
 			return False
 		return True
 
+	def getRemainingDiskSizeInGigaByte(self):
+		st = os.statvfs(self.pathToDownloadFolder)
+		return st.f_bavail * st.f_frsize/1024/1024/1024
+
 	def mount(self):
 		if os.path.ismount(self.penPath) == False:
 			self.log.info ("There is no USB pen mounted under " + self.penPath + ". Trying to mount it.")
 						
 			if self._mountUSB(self.penPath) == False:
-				self.log.info ("Could not mount USB pen under " + self.penPath + ". Exiting")
-				sys.exit(-1)
+				self.log.info ("Could not mount USB pen under " + self.penPath)
+				return False
 			else:
 				self.log.info ("Successfully mounted USB pen under " + self.penPath)
 		else:
@@ -83,10 +88,10 @@ class CommuteTube():
 		# Unmount USB pen after all work is done
 		if self._unmountUSB(self.penPath) == True:
 			self.log.info ("USB Pen under "+self.penPath+ " has been unmounted")
-			sys.exit(0)
+			return True
 		else:
-			self.log.info ("USB Pen under "+self.penPath+ " has not been successfully unmounted")
-			sys.exit(1)
+			self.log.error ("USB Pen under "+self.penPath+ " has not been successfully unmounted")
+			return False
 
 	def createDownloadFolder(self):
 		if os.path.exists(self.pathToDownloadFolder) == False:
@@ -97,8 +102,17 @@ class CommuteTube():
 
 		try:
 
-			self.mount()
+			if self.mountAndUnmount == True and self.mount() == False:
+				sys.exit(1)
+
 			self.createDownloadFolder()
+
+			diskSizeBefore = self.getRemainingDiskSizeInGigaByte()
+			filesBefore = os.listdir(self.pathToDownloadFolder)
+
+			self.log.info("Remaining disk size: %.2f GB" % diskSizeBefore)
+
+
 
 			ydl = YoutubeDL()
 			ydl.add_default_info_extractors()
@@ -132,6 +146,12 @@ class CommuteTube():
 				except Exception, e:
 					self.log.error ("Error while processing source. Message: '" + e.message + "'")
 
+			filesAfter = os.listdir(self.pathToDownloadFolder)
+		
+			filesDelta = list(set(filesAfter) - set(filesBefore))
+			for fileDownloaded in filesDelta:
+				self.log.info("Downloaded: " + fileDownloaded)
+
 			# Copy log file to USB pen
 			logFileDestination = self.pathToDownloadFolder+ "/" + self.logFile
 			shutil.copyfile(self.logFile, logFileDestination)
@@ -141,7 +161,8 @@ class CommuteTube():
 			self.log.error(e)
 			raise e
 		finally:
-			self.unmount()		
+			if self.mountAndUnmount == True:
+				self.unmount()		
 
 	def checkForPen(self):
 		if os.path.ismount(self.penPath) == False:

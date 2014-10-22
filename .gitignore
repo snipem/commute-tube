@@ -3,3 +3,7 @@ build.sh
 config.json
 *.pyc
 
+
+already_downloaded.txt
+
+commute-tube.log

@@ -2,7 +2,9 @@
   "pen":
   {
   	"penPath" : "/mnt/commuteUSB",
-  	"downloadFolder" : "Download"
+  	"downloadFolder" : "Download",
+  	"mountAndUnmount": "False",
+  	"debug" : "False"
   },
   "source": 
   [

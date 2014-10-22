@@ -21,5 +21,5 @@ In order to do so, extract the UUID of your USB pen and put it into the `/etc/fs
 [matze@beatle ~]$ sudo blkid 
 /dev/sdd1: LABEL="KINGSTON" UUID="25E6-B035" TYPE="vfat" PARTUUID="c3072e18-01" 
 [matze@beatle ~]$ cat /etc/fstab 
-UUID=25E6-B035    /mnt/commuteUSB  vfat   user,rw,umask=000              0  0
+UUID=25E6-B035    /mnt/commuteUSB  vfat   user,noauto,rw,umask=000              0  0
 ```
