@@ -8,6 +8,7 @@ import logging
 import json
 import subprocess
 import shutil
+import ntpath
 
 class CommuteTube():
 
@@ -99,6 +100,57 @@ class CommuteTube():
 			self.log.info ("Creating folder "+self.pathToDownloadFolder)
 			os.mkdir(self.pathToDownloadFolder)
 
+	def processUrl(self, source):
+		
+		ydl = YoutubeDL()
+		ydl.add_default_info_extractors()
+
+		sourceUrl = source['url'].decode()
+		sourceDescription = ""
+		
+		if 'description' in source: sourceDescription = source['description'].decode()
+
+		self.log.info("Processing source: '" + sourceDescription + "' Url: '" + sourceUrl + "'")
+
+		ydl.params = source
+		if 'nooverwrites' not in ydl.params : ydl.params['nooverwrites'] = True
+		if 'ignoreerrors' not in ydl.params : ydl.params['ignoreerrors'] = True
+		if 'download_archive' not in ydl.params : ydl.params['download_archive'] = "already_downloaded.txt"
+		
+		ydl.params['logger'] = self.ydlLog
+		
+		outtmpl = self.pathToDownloadFolder + u'/%(uploader)s-%(title)s-%(id)s.%(ext)s'
+		if 'outtmpl' not in ydl.params : ydl.params['outtmpl'] = outtmpl
+
+		if self.debug == True:
+			self.log.debug("All downloads will be simulated since this is debug mode")
+			ydl.params['simulate'] = True
+
+		ydl.download([source['url']])
+
+	def processPath(self, source):
+
+		sourcePath = source['path'].decode()
+		sourceDescription = ""
+		if 'description' in source: sourceDescription = source['description'].decode()
+		
+		self.log.info("Processing path: '" + sourceDescription + "' Path: '" + sourcePath + "'")
+
+		src = sourcePath
+		filename = ntpath.basename(sourcePath)
+		dest = self.pathToDownloadFolder + "/" + filename
+
+		self.log.debug("Attempt to copy to " + dest)
+
+		if not os.path.isfile(dest):
+			shutil.copy2 (src, dest)
+			self.log.debug("File "+ filename +" did not exist, has been copied")
+		elif os.stat(src).st_mtime - os.stat(dest).st_mtime > 1:
+			shutil.copy2 (src, dest)
+			self.log.debug("File "+ filename +" did exist but was older, has been overwritten")
+		else:
+			self.log.debug("File "+ filename +" has not been copied, was already in place with same timestamp")
+
 	def run(self):
 
 		try:
@@ -114,38 +166,16 @@ class CommuteTube():
 			self.log.info("Remaining disk size: %.2f GB" % diskSizeBefore)
 
 
-
-			ydl = YoutubeDL()
-			ydl.add_default_info_extractors()
-
 			for source in self.config['source']:
 				
 				try:
-					sourceUrl = source['url'].decode()
-					sourceDescription = ""
 					
-					if 'description' in source: sourceDescription = source['description'].decode()
-
-					self.log.info("Processing source: '" + sourceDescription + "' Url: '" + sourceUrl + "'")
-
-					ydl.params = source
-					if 'nooverwrites' not in ydl.params : ydl.params['nooverwrites'] = True
-					if 'ignoreerrors' not in ydl.params : ydl.params['ignoreerrors'] = True
-					if 'download_archive' not in ydl.params : ydl.params['download_archive'] = "already_downloaded.txt"
-					
-					ydl.params['logger'] = self.ydlLog
-					
-					outtmpl = self.pathToDownloadFolder + u'/%(uploader)s-%(title)s-%(id)s.%(ext)s'
-					if 'outtmpl' not in ydl.params : ydl.params['outtmpl'] = outtmpl
-
-					if self.debug == True:
-						self.log.debug("All downloads will be simulated since this is debug mode")
-						ydl.params['simulate'] = True
-
-					ydl.download([source['url']])
+					if "url" in source : self.processUrl(source)
+					elif "path" in source : self.processPath(source)
 
 				except Exception, e:
-					self.log.error ("Error while processing source. Message: '" + e.message + "'")
+					print e
+					self.log.error ("Error while processing source. Message: '" + e.message +"'")
 
 			filesAfter = os.listdir(self.pathToDownloadFolder)
 		
