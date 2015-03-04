@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 from __future__ import division
 from youtube_dl import YoutubeDL
 import youtube_dl
@@ -140,16 +141,16 @@ class CommuteTube():
 		filename = ntpath.basename(sourcePath)
 		dest = self.pathToDownloadFolder + "/" + filename
 
-		self.log.debug("Attempt to copy to " + dest)
-
 		if not os.path.isfile(dest):
 			shutil.copy2 (src, dest)
-			self.log.debug("File "+ filename +" did not exist, has been copied")
+			self.log.debug("+ File "+ filename +" did not exist, has been copied")
+			return filename
 		elif os.stat(src).st_mtime - os.stat(dest).st_mtime > 1:
 			shutil.copy2 (src, dest)
-			self.log.debug("File "+ filename +" did exist but was older, has been overwritten")
+			self.log.debug("+ File "+ filename +" did exist but was older, has been overwritten")
+			return filename
 		else:
-			self.log.debug("File "+ filename +" has not been copied, was already in place with same timestamp")
+			self.log.debug("= File "+ filename +" has not been copied, was already in place with same timestamp")
 
 	def run(self):
 
@@ -165,13 +166,17 @@ class CommuteTube():
 
 			self.log.info("Remaining disk size: %.2f GB" % diskSizeBefore)
 
+			downloadedFiles = []
 
 			for source in self.config['source']:
 				
 				try:
 					
-					if "url" in source : self.processUrl(source)
-					elif "path" in source : self.processPath(source)
+					if "url" in source : filename = self.processUrl(source)
+					elif "path" in source : filename = self.processPath(source)
+
+					if (filename != None):
+						downloadedFiles.append(filename)
 
 				except Exception, e:
 					print e
@@ -180,11 +185,19 @@ class CommuteTube():
 			filesAfter = os.listdir(self.pathToDownloadFolder)
 		
 			filesDelta = list(set(filesAfter) - set(filesBefore))
-			for fileDownloaded in filesDelta:
-				self.log.info("Downloaded: " + fileDownloaded)
+			for fileDelta in filesDelta:
+				downloadedFiles.append(fileDelta)
+
+			for downloadedFile in downloadedFiles:
+				self.log.info("Downloaded: " + downloadedFile)
 
 			diskSizeAfter = self.getRemainingDiskSizeInGigaByte()
 			self.log.info("Remaining disk size: %.2f GB" % diskSizeAfter)
+
+			#TODO Add configuration option here
+			if (True):
+				self.log.debug("Writing playlist for new files")
+				self.writePlaylist(downloadedFiles)
 
 			# Copy log file to USB pen
 			logFileDestination = self.pathToDownloadFolder+ "/" + self.logFile
@@ -197,6 +210,10 @@ class CommuteTube():
 		finally:
 			if self.mountAndUnmount == True:
 				self.unmount()		
+
+	def writePlaylist(self, files):
+		f = open(self.pathToDownloadFolder+'/'+'new.m3u', 'w')
+		f.write("\n".join(files).encode('UTF-8'))
 
 	def checkForPen(self):
 		if os.path.ismount(self.penPath) == False:
