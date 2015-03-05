@@ -10,6 +10,8 @@ import json
 import subprocess
 import shutil
 import ntpath
+import hashlib
+
 
 class CommuteTube():
 
@@ -24,7 +26,7 @@ class CommuteTube():
 	mountAndUnmount = True
 
 	def getConfig(self):
-		json_data=open('config.json')
+		json_data = open('config.json')
 		return json.load(json_data)
 
 	def __init__(self):
@@ -40,7 +42,6 @@ class CommuteTube():
 		consoleHandler = logging.StreamHandler()
 		consoleHandler.setFormatter(logFormatter)
 		rootLogger.addHandler(consoleHandler)
-
 
 		self.log = logging
 		self.ydlLog = logging
@@ -145,12 +146,30 @@ class CommuteTube():
 			shutil.copy2 (src, dest)
 			self.log.debug("+ File "+ filename +" did not exist, has been copied")
 			return filename
-		elif os.stat(src).st_mtime - os.stat(dest).st_mtime > 1:
+		elif self.filesAreDifferent(src, dest):
 			shutil.copy2 (src, dest)
-			self.log.debug("+ File "+ filename +" did exist but was older, has been overwritten")
+			self.log.debug("+ File "+ filename +" did exist but was different, has been overwritten")
 			return filename
 		else:
-			self.log.debug("= File "+ filename +" has not been copied, was already in place with same timestamp")
+			self.log.debug("= File "+ filename +" has not been copied, was already in place with same 100 byte digest")
+
+	def filesAreDifferent(self, src, dest):
+		byteSize = 100
+
+		print src
+		print dest
+		s = open(src, 'rb')
+		srcDigest = hashlib.sha224(s.read(byteSize)).digest()
+		d = open(dest, 'rb')
+		destDigest = hashlib.sha224(d.read(byteSize)).digest()
+
+		s.close()
+		d.close()
+
+		if srcDigest == destDigest:
+			return False
+		else:
+			return True
 
 	def run(self):
 
@@ -194,7 +213,7 @@ class CommuteTube():
 			diskSizeAfter = self.getRemainingDiskSizeInGigaByte()
 			self.log.info("Remaining disk size: %.2f GB" % diskSizeAfter)
 
-			#TODO Add configuration option here
+			# TODO Add configuration option here
 			if (True):
 				self.log.debug("Writing playlist for new files")
 				self.writePlaylist(downloadedFiles)
@@ -208,8 +227,8 @@ class CommuteTube():
 			self.log.error(e)
 			raise e
 		finally:
-			if self.mountAndUnmount == True:
-				self.unmount()		
+			if self.mountAndUnmount is True:
+				self.unmount()
 
 	def writePlaylist(self, files):
 		f = open(self.pathToDownloadFolder+'/'+'new.m3u', 'w')
@@ -236,5 +255,3 @@ class CommuteTube():
 
 	def main(self):
 		self.run()
-
-
