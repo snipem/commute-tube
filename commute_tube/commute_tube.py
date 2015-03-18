@@ -127,6 +127,9 @@ class CommuteTube():
             + "' Url: '" + sourceUrl + "'")
 
         ydl.params = source
+
+        if 'format' not in ydl.params:
+            ydl.params['format'] = "bestvideo+bestaudio"
         if 'nooverwrites' not in ydl.params:
             ydl.params['nooverwrites'] = True
         if 'ignoreerrors' not in ydl.params:
