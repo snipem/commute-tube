@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import division
 from youtube_dl import YoutubeDL
-import youtube_dl
 import os
 import sys
 import logging
@@ -15,243 +14,272 @@ import hashlib
 
 class CommuteTube():
 
-	debug = None
-	log = None
-	ydlLog = None
-	config = []
-	penPath = ""
-	downloadFolder = ""
-	pathToDownloadFolder = ""
-	logFile = "commute-tube.log"
-	mountAndUnmount = True
+    debug = None
+    log = None
+    ydlLog = None
+    config = []
+    penPath = ""
+    downloadFolder = ""
+    pathToDownloadFolder = ""
+    logFile = "commute-tube.log"
+    mountAndUnmount = True
 
-	def getConfig(self):
-		json_data = open('config.json')
-		return json.load(json_data)
+    def getConfig(self):
+        json_data = open('config.json')
+        return json.load(json_data)
 
-	def __init__(self):
+    def __init__(self):
 
-		logFormatter = logging.Formatter("%(asctime)s [%(levelname)-5.5s] [%(module)-12.12s]  %(message)s")
-		rootLogger = logging.getLogger()
-		rootLogger.setLevel(logging.DEBUG)
+        logFormatter = logging.Formatter(
+            "%(asctime)s [%(levelname)-5.5s] [%(module)-12.12s]  %(message)s")
+        rootLogger = logging.getLogger()
+        rootLogger.setLevel(logging.DEBUG)
 
-		fileHandler = logging.FileHandler(self.logFile, mode='w')
-		fileHandler.setFormatter(logFormatter)
-		rootLogger.addHandler(fileHandler)
+        fileHandler = logging.FileHandler(self.logFile, mode='w')
+        fileHandler.setFormatter(logFormatter)
+        rootLogger.addHandler(fileHandler)
 
-		consoleHandler = logging.StreamHandler()
-		consoleHandler.setFormatter(logFormatter)
-		rootLogger.addHandler(consoleHandler)
+        consoleHandler = logging.StreamHandler()
+        consoleHandler.setFormatter(logFormatter)
+        rootLogger.addHandler(consoleHandler)
 
-		self.log = logging
-		self.ydlLog = logging
+        self.log = logging
+        self.ydlLog = logging
 
-		self.config = self.getConfig()
-		self.penPath = self.config['pen']['penPath']
-		self.downloadFolder = self.config['pen']['downloadFolder']
-		
-		if self.config['pen']['mountAndUnmount'] == "False" : self.mountAndUnmount = False
-		if self.config['pen']['debug'] == "True" : self.debug = True
+        self.config = self.getConfig()
+        self.penPath = self.config['pen']['penPath']
+        self.downloadFolder = self.config['pen']['downloadFolder']
 
-		self.pathToDownloadFolder = self.penPath+"/"+self.downloadFolder
-			
+        if self.config['pen']['mountAndUnmount'] == "False":
+            self.mountAndUnmount = False
+        if self.config['pen']['debug'] == "True":
+            self.debug = True
 
-	def _mountUSB(self,path):
-		try:
-			subprocess.check_call(["mount", path])
-		except Exception, e:
-			self.log.error("Could not mount "+path)
-			return False
-		return True
+        self.pathToDownloadFolder = self.penPath + "/" + self.downloadFolder
 
-	def _unmountUSB(self,path):
-		try:
-			subprocess.check_call(["umount", path])
-		except Exception, e:
-			self.log.error("Could not unmount "+path)
-			return False
-		return True
+    def _mountUSB(self, path):
+        try:
+            subprocess.check_call(["mount", path])
+        except Exception, e:
+            self.log.error("Could not mount " + path)
+            return False
+        return True
 
-	def getRemainingDiskSizeInGigaByte(self):
-		st = os.statvfs(self.pathToDownloadFolder)
-		return st.f_bavail * st.f_frsize/1024/1024/1024
+    def _unmountUSB(self, path):
+        try:
+            subprocess.check_call(["umount", path])
+        except Exception, e:
+            self.log.error("Could not unmount " + path)
+            return False
+        return True
 
-	def mount(self):
-		if os.path.ismount(self.penPath) == False:
-			self.log.info ("There is no USB pen mounted under " + self.penPath + ". Trying to mount it.")
-						
-			if self._mountUSB(self.penPath) == False:
-				self.log.info ("Could not mount USB pen under " + self.penPath)
-				return False
-			else:
-				self.log.info ("Successfully mounted USB pen under " + self.penPath)
-		else:
-			self.log.info ("There is a USB pen already mounted under " + self.penPath + ". Processing further.")
+    def getRemainingDiskSizeInGigaByte(self):
+        st = os.statvfs(self.pathToDownloadFolder)
+        return st.f_bavail * st.f_frsize / 1024 / 1024 / 1024
 
-	def unmount(self):
-		# Unmount USB pen after all work is done
-		if self._unmountUSB(self.penPath) == True:
-			self.log.info ("USB Pen under "+self.penPath+ " has been unmounted")
-			return True
-		else:
-			self.log.error ("USB Pen under "+self.penPath+ " has not been successfully unmounted")
-			return False
+    def mount(self):
+        if os.path.ismount(self.penPath) == False:
+            self.log.info(
+                "There is no USB pen mounted under "
+                + self.penPath + ". Trying to mount it.")
 
-	def createDownloadFolder(self):
-		if os.path.exists(self.pathToDownloadFolder) == False:
-			self.log.info ("Creating folder "+self.pathToDownloadFolder)
-			os.mkdir(self.pathToDownloadFolder)
+            if self._mountUSB(self.penPath) == False:
+                self.log.info("Could not mount USB pen under " + self.penPath)
+                return False
+            else:
+                self.log.info(
+                    "Successfully mounted USB pen under " + self.penPath)
+        else:
+            self.log.info(
+                "There is a USB pen already mounted under " + self.penPath
+                + ". Processing further.")
 
-	def processUrl(self, source):
-		
-		ydl = YoutubeDL()
-		ydl.add_default_info_extractors()
+    def unmount(self):
+        # Unmount USB pen after all work is done
+        if self._unmountUSB(self.penPath) == True:
+            self.log.info(
+                "USB Pen under " + self.penPath + " has been unmounted")
+            return True
+        else:
+            self.log.error(
+                "USB Pen under " + self.penPath
+                + " has not been successfully unmounted")
+            return False
 
-		sourceUrl = source['url'].decode()
-		sourceDescription = ""
-		
-		if 'description' in source: sourceDescription = source['description'].decode()
+    def createDownloadFolder(self):
+        if os.path.exists(self.pathToDownloadFolder) == False:
+            self.log.info("Creating folder " + self.pathToDownloadFolder)
+            os.mkdir(self.pathToDownloadFolder)
 
-		self.log.info("Processing source: '" + sourceDescription + "' Url: '" + sourceUrl + "'")
+    def processUrl(self, source):
 
-		ydl.params = source
-		if 'nooverwrites' not in ydl.params : ydl.params['nooverwrites'] = True
-		if 'ignoreerrors' not in ydl.params : ydl.params['ignoreerrors'] = True
-		if 'download_archive' not in ydl.params : ydl.params['download_archive'] = "already_downloaded.txt"
-		
-		ydl.params['logger'] = self.ydlLog
-		
-		outtmpl = self.pathToDownloadFolder + u'/%(uploader)s-%(title)s-%(id)s.%(ext)s'
-		if 'outtmpl' not in ydl.params : ydl.params['outtmpl'] = outtmpl
+        ydl = YoutubeDL()
+        ydl.add_default_info_extractors()
 
-		if self.debug == True:
-			self.log.debug("All downloads will be simulated since this is debug mode")
-			ydl.params['simulate'] = True
+        sourceUrl = source['url'].decode()
+        sourceDescription = ""
 
-		ydl.download([source['url']])
+        if 'description' in source:
+            sourceDescription = source['description'].decode()
 
-	def processPath(self, source):
+        self.log.info(
+            "Processing source: '" + sourceDescription
+            + "' Url: '" + sourceUrl + "'")
 
-		sourcePath = source['path'].decode()
-		sourceDescription = ""
-		if 'description' in source: sourceDescription = source['description'].decode()
-		
-		self.log.info("Processing path: '" + sourceDescription + "' Path: '" + sourcePath + "'")
+        ydl.params = source
+        if 'nooverwrites' not in ydl.params:
+            ydl.params['nooverwrites'] = True
+        if 'ignoreerrors' not in ydl.params:
+            ydl.params['ignoreerrors'] = True
+        if 'download_archive' not in ydl.params:
+            ydl.params['download_archive'] = "already_downloaded.txt"
 
-		src = sourcePath
-		filename = ntpath.basename(sourcePath)
-		dest = self.pathToDownloadFolder + "/" + filename
+        ydl.params['logger'] = self.ydlLog
 
-		if not os.path.isfile(dest):
-			shutil.copy2 (src, dest)
-			self.log.debug("+ File "+ filename +" did not exist, has been copied")
-			return filename
-		elif self.filesAreDifferent(src, dest):
-			shutil.copy2 (src, dest)
-			self.log.debug("+ File "+ filename +" did exist but was different, has been overwritten")
-			return filename
-		else:
-			self.log.debug("= File "+ filename +" has not been copied, was already in place with same 100 byte digest")
+        outtmpl = self.pathToDownloadFolder + \
+            u'/%(uploader)s-%(title)s-%(id)s.%(ext)s'
+        if 'outtmpl' not in ydl.params:
+            ydl.params['outtmpl'] = outtmpl
 
-	def filesAreDifferent(self, src, dest):
-		byteSize = 100
+        if self.debug is True:
+            self.log.debug(
+                "All downloads will be simulated since this is debug mode")
+            ydl.params['simulate'] = True
 
-		print src
-		print dest
-		s = open(src, 'rb')
-		srcDigest = hashlib.sha224(s.read(byteSize)).digest()
-		d = open(dest, 'rb')
-		destDigest = hashlib.sha224(d.read(byteSize)).digest()
+        ydl.download([source['url']])
 
-		s.close()
-		d.close()
+    def processPath(self, source):
 
-		if srcDigest == destDigest:
-			return False
-		else:
-			return True
+        sourcePath = source['path'].decode()
+        sourceDescription = ""
+        if 'description' in source:
+            sourceDescription = source['description'].decode()
 
-	def run(self):
+        self.log.info(
+            "Processing path: '" + sourceDescription +
+            "' Path: '" + sourcePath + "'")
 
-		try:
+        src = sourcePath
+        filename = ntpath.basename(sourcePath)
+        dest = self.pathToDownloadFolder + "/" + filename
 
-			if self.mountAndUnmount == True and self.mount() == False:
-				sys.exit(1)
+        if not os.path.isfile(dest):
+            shutil.copy2(src, dest)
+            self.log.debug(
+                "+ File " + filename + " did not exist, has been copied")
+            return filename
+        elif self.filesAreDifferent(src, dest):
+            shutil.copy2(src, dest)
+            self.log.debug(
+                "+ File " + filename + " did exist but was different, has been overwritten")
+            return filename
+        else:
+            self.log.debug(
+                "= File " + filename + " has not been copied, was already in place with same 100 byte digest")
 
-			self.createDownloadFolder()
+    def filesAreDifferent(self, src, dest):
+        byteSize = 100
 
-			diskSizeBefore = self.getRemainingDiskSizeInGigaByte()
-			filesBefore = os.listdir(self.pathToDownloadFolder)
+        print src
+        print dest
+        s = open(src, 'rb')
+        srcDigest = hashlib.sha224(s.read(byteSize)).digest()
+        d = open(dest, 'rb')
+        destDigest = hashlib.sha224(d.read(byteSize)).digest()
 
-			self.log.info("Remaining disk size: %.2f GB" % diskSizeBefore)
+        s.close()
+        d.close()
 
-			downloadedFiles = []
+        if srcDigest == destDigest:
+            return False
+        else:
+            return True
 
-			for source in self.config['source']:
-				
-				try:
-					
-					if "url" in source : filename = self.processUrl(source)
-					elif "path" in source : filename = self.processPath(source)
+    def run(self):
 
-					if (filename != None):
-						downloadedFiles.append(filename)
+        try:
 
-				except Exception, e:
-					print e
-					self.log.error ("Error while processing source. Message: '" + e.message +"'")
+            if self.mountAndUnmount is True and self.mount() is False:
+                sys.exit(1)
 
-			filesAfter = os.listdir(self.pathToDownloadFolder)
-		
-			filesDelta = list(set(filesAfter) - set(filesBefore))
-			for fileDelta in filesDelta:
-				downloadedFiles.append(fileDelta)
+            self.createDownloadFolder()
 
-			for downloadedFile in downloadedFiles:
-				self.log.info("Downloaded: " + downloadedFile)
+            diskSizeBefore = self.getRemainingDiskSizeInGigaByte()
+            filesBefore = os.listdir(self.pathToDownloadFolder)
 
-			diskSizeAfter = self.getRemainingDiskSizeInGigaByte()
-			self.log.info("Remaining disk size: %.2f GB" % diskSizeAfter)
+            self.log.info("Remaining disk size: %.2f GB" % diskSizeBefore)
 
-			# TODO Add configuration option here
-			if (True):
-				self.log.debug("Writing playlist for new files")
-				self.writePlaylist(downloadedFiles)
+            downloadedFiles = []
 
-			# Copy log file to USB pen
-			logFileDestination = self.pathToDownloadFolder+ "/" + self.logFile
-			shutil.copyfile(self.logFile, logFileDestination)
-			self.log.debug("Log file has been copied to " + logFileDestination)
+            for source in self.config['source']:
 
-		except Exception, e:
-			self.log.error(e)
-			raise e
-		finally:
-			if self.mountAndUnmount is True:
-				self.unmount()
+                try:
 
-	def writePlaylist(self, files):
-		f = open(self.pathToDownloadFolder+'/'+'new.m3u', 'w')
-		f.write("\n".join(files).encode('UTF-8'))
+                    if "url" in source:
+                        filename = self.processUrl(source)
+                    elif "path" in source:
+                        filename = self.processPath(source)
 
-	def checkForPen(self):
-		if os.path.ismount(self.penPath) == False:
-			self.log.info("USB Pen is not mounted under "+self.penPath)
-			if self._mountUSB(self.penPath) == True:
-				self.log.info("USB Pen has been successfully mounted")
-			else:
-				sys.exit(1)
+                    if (filename is not None):
+                        downloadedFiles.append(filename)
 
-			if self._unmountUSB(self.penPath) == True:
-				self.log.info("USB Pen has been successfully unmounted")
-			else:
-				sys.exit(1)
+                except Exception, e:
+                    print e
+                    self.log.error(
+                        "Error while processing source. Message: '" +
+                        e.message + "'")
 
-			self.log.info ("USB Pen is present and able to be mounted")
-			sys.exit(0)
-		else:
-			self.log.info("USB Pen is already mounted under "+ self.penPath)
-			sys.exit(0)
+            filesAfter = os.listdir(self.pathToDownloadFolder)
 
-	def main(self):
-		self.run()
+            filesDelta = list(set(filesAfter) - set(filesBefore))
+            for fileDelta in filesDelta:
+                downloadedFiles.append(fileDelta)
+
+            for downloadedFile in downloadedFiles:
+                self.log.info("Downloaded: " + downloadedFile)
+
+            diskSizeAfter = self.getRemainingDiskSizeInGigaByte()
+            self.log.info("Remaining disk size: %.2f GB" % diskSizeAfter)
+
+            # TODO Add configuration option here
+            if (True):
+                self.log.debug("Writing playlist for new files")
+                self.writePlaylist(downloadedFiles)
+
+            # Copy log file to USB pen
+            logFileDestination = self.pathToDownloadFolder + "/" + self.logFile
+            shutil.copyfile(self.logFile, logFileDestination)
+            self.log.debug("Log file has been copied to " + logFileDestination)
+
+        except Exception, e:
+            self.log.error(e)
+            raise e
+        finally:
+            if self.mountAndUnmount is True:
+                self.unmount()
+
+    def writePlaylist(self, files):
+        f = open(self.pathToDownloadFolder + '/' + 'new.m3u', 'w')
+        f.write("\n".join(files).encode('UTF-8'))
+
+    def checkForPen(self):
+        if os.path.ismount(self.penPath) == False:
+            self.log.info("USB Pen is not mounted under " + self.penPath)
+            if self._mountUSB(self.penPath) == True:
+                self.log.info("USB Pen has been successfully mounted")
+            else:
+                sys.exit(1)
+
+            if self._unmountUSB(self.penPath) == True:
+                self.log.info("USB Pen has been successfully unmounted")
+            else:
+                sys.exit(1)
+
+            self.log.info("USB Pen is present and able to be mounted")
+            sys.exit(0)
+        else:
+            self.log.info("USB Pen is already mounted under " + self.penPath)
+            sys.exit(0)
+
+    def main(self):
+        self.run()
