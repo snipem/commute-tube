@@ -62,7 +62,7 @@ class CommuteTube():
         try:
             subprocess.check_call(["mount", path])
         except Exception, e:
-            self.log.error("Could not mount " + path)
+            self.log.error("Could not mount " + path + " Error: " + e.message)
             return False
         return True
 
@@ -70,7 +70,7 @@ class CommuteTube():
         try:
             subprocess.check_call(["umount", path])
         except Exception, e:
-            self.log.error("Could not unmount " + path)
+            self.log.error("Could not unmount " + path + " Error: " + e.message)
             return False
         return True
 
@@ -175,11 +175,14 @@ class CommuteTube():
         elif self.filesAreDifferent(src, dest):
             shutil.copy2(src, dest)
             self.log.debug(
-                "+ File " + filename + " did exist but was different, has been overwritten")
+                "+ File " + filename +
+                " did exist but was different, has been overwritten")
             return filename
         else:
             self.log.debug(
-                "= File " + filename + " has not been copied, was already in place with same 100 byte digest")
+                "= File " + filename +
+                " has not been copied," +
+                " was already in place with same 100 byte digest")
 
     def filesAreDifferent(self, src, dest):
         byteSize = 100
@@ -209,7 +212,6 @@ class CommuteTube():
             self.createDownloadFolder()
 
             diskSizeBefore = self.getRemainingDiskSizeInGigaByte()
-            filesBefore = os.listdir(self.pathToDownloadFolder)
 
             self.log.info("Remaining disk size: %.2f GB" % diskSizeBefore)
 
@@ -236,12 +238,6 @@ class CommuteTube():
                     self.log.error(
                         "Error while processing source. Message: '" +
                         e.message + "'")
-
-            filesAfter = os.listdir(self.pathToDownloadFolder)
-
-            filesDelta = sorted(list(set(filesAfter) - set(filesBefore)))
-            for fileDelta in filesDelta:
-                downloadedFiles.append(fileDelta)
 
             downloadedFiles = sorted(downloadedFiles)
 
