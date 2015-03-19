@@ -247,10 +247,12 @@ class CommuteTube():
             diskSizeAfter = self.getRemainingDiskSizeInGigaByte()
             self.log.info("Remaining disk size: %.2f GB" % diskSizeAfter)
 
+            allFiles = sorted(os.listdir(self.pathToDownloadFolder))
+
             # TODO Add configuration option here
             if (True):
                 self.log.debug("Writing playlist for all files")
-                self.writePlaylist(downloadedFiles, "all")
+                self.writePlaylist(allFiles, "all")
 
             # TODO Add configuration option here
             if (True):
