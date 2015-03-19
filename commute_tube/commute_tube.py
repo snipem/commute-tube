@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import division
 from youtube_dl import YoutubeDL
+from youtube_dl import version as YoutubeDL_version
 import os
 import sys
 import logging
@@ -213,6 +214,10 @@ class CommuteTube():
             self.log.info("Remaining disk size: %.2f GB" % diskSizeBefore)
 
             downloadedFiles = []
+
+            self.log.debug(
+                "Running with YoutubeDL version as of " +
+                YoutubeDL_version.__version__)
 
             for source in self.config['source']:
 
