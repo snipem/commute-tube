@@ -239,9 +239,11 @@ class CommuteTube():
 
             filesAfter = os.listdir(self.pathToDownloadFolder)
 
-            filesDelta = list(set(filesAfter) - set(filesBefore))
+            filesDelta = sorted(list(set(filesAfter) - set(filesBefore)))
             for fileDelta in filesDelta:
                 downloadedFiles.append(fileDelta)
+
+            downloadedFiles = sorted(downloadedFiles)
 
             for downloadedFile in downloadedFiles:
                 self.log.info("Downloaded: " + downloadedFile)
@@ -251,8 +253,13 @@ class CommuteTube():
 
             # TODO Add configuration option here
             if (True):
+                self.log.debug("Writing playlist for all files")
+                self.writePlaylist(downloadedFiles, "all")
+
+            # TODO Add configuration option here
+            if (True):
                 self.log.debug("Writing playlist for new files")
-                self.writePlaylist(downloadedFiles)
+                self.writePlaylist(downloadedFiles, "new")
 
             # Copy log file to USB pen
             logFileDestination = self.pathToDownloadFolder + "/" + self.logFile
@@ -266,8 +273,8 @@ class CommuteTube():
             if self.mountAndUnmount is True:
                 self.unmount()
 
-    def writePlaylist(self, files):
-        f = open(self.pathToDownloadFolder + '/' + 'new.m3u', 'w')
+    def writePlaylist(self, files, name):
+        f = open(self.pathToDownloadFolder + '/' + name + '.m3u', 'w')
         f.write("\n".join(files).encode('UTF-8'))
 
     def checkForPen(self):
