@@ -129,7 +129,7 @@ class CommuteTube():
 
         ydl.params = source
 
-        if 'format' not in ydl.params:
+        if 'format' not in ydl.params and 'format_limit' not in ydl.params:
             ydl.params['format'] = "bestvideo+bestaudio"
         if 'nooverwrites' not in ydl.params:
             ydl.params['nooverwrites'] = True
@@ -138,6 +138,7 @@ class CommuteTube():
         if 'download_archive' not in ydl.params:
             ydl.params['download_archive'] = "already_downloaded.txt"
 
+        ydl.params['restrictfilenames'] = True
         ydl.params['logger'] = self.ydlLog
 
         outtmpl = self.pathToDownloadFolder + \
