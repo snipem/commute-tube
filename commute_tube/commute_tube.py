@@ -11,7 +11,7 @@ import subprocess
 import shutil
 import ntpath
 import hashlib
-
+import subprocess
 
 class CommuteTube():
 
@@ -112,6 +112,19 @@ class CommuteTube():
             self.log.info("Creating folder " + self.pathToDownloadFolder)
             os.mkdir(self.pathToDownloadFolder)
 
+    def processShellscript(self, source):
+
+        shellscript = source['shellscript']
+
+        self.log.info(
+            "Processing shellscript: '" + shellscript + "'")
+
+        p = subprocess.Popen(shellscript, shell=True,stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+        out = p.communicate()[0]
+        self.log.debug("Shellscript output:" + out)
+
+        return out.split("\n")
+
     def processUrl(self, source):
 
         ydl = YoutubeDL()
@@ -128,6 +141,7 @@ class CommuteTube():
             + "' Url: '" + sourceUrl + "'")
 
         ydl.params = source
+        prefix = ""
 
         if 'format' not in ydl.params and 'format_limit' not in ydl.params:
             ydl.params['format'] = "bestvideo+bestaudio"
@@ -137,12 +151,14 @@ class CommuteTube():
             ydl.params['ignoreerrors'] = True
         if 'download_archive' not in ydl.params:
             ydl.params['download_archive'] = "already_downloaded.txt"
+        if 'prefix' in ydl.params:
+            prefix = ydl.params['prefix']
 
         ydl.params['restrictfilenames'] = True
         ydl.params['logger'] = self.ydlLog
 
-        outtmpl = self.pathToDownloadFolder + \
-            u'/%(uploader)s-%(title)s-%(id)s.%(ext)s'
+        outtmpl = self.pathToDownloadFolder + "/" + prefix + \
+            u'%(uploader)s-%(title)s-%(id)s.%(ext)s'
         if 'outtmpl' not in ydl.params:
             ydl.params['outtmpl'] = outtmpl
 
@@ -230,6 +246,11 @@ class CommuteTube():
                         filename = self.processUrl(source)
                     elif "path" in source:
                         filename = self.processPath(source)
+                    elif "shellscript" in source:
+                        urls = self.processShellscript(source)
+                        for url in urls:
+                            source['url'] = url
+                            filename = self.processUrl(source)
 
                     if (filename is not None):
                         downloadedFiles.append(filename)
