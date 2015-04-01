@@ -229,6 +229,7 @@ class CommuteTube():
             self.createDownloadFolder()
 
             diskSizeBefore = self.getRemainingDiskSizeInGigaByte()
+            filesBefore = os.listdir(self.pathToDownloadFolder)
 
             self.log.info("Remaining disk size: %.2f GB" % diskSizeBefore)
 
@@ -260,6 +261,12 @@ class CommuteTube():
                     self.log.error(
                         "Error while processing source. Message: '" +
                         e.message + "'")
+
+            filesAfter = os.listdir(self.pathToDownloadFolder)
+
+            filesDelta = sorted(list(set(filesAfter) - set(filesBefore)))
+            for fileDelta in filesDelta:
+                downloadedFiles.append(fileDelta)
 
             downloadedFiles = sorted(downloadedFiles)
 
