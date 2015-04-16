@@ -119,11 +119,13 @@ class CommuteTube():
         self.log.info(
             "Processing shellscript: '" + shellscript + "'")
 
-        p = subprocess.Popen(shellscript, shell=True,stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
-        out = p.communicate()[0]
-        self.log.debug("Shellscript output:" + out)
-
-        return out.split("\n")
+        out = subprocess.Popen(["bash", "-c", shellscript], stdout=subprocess.PIPE).communicate()[0]
+        self.log.debug("Shellscript output: " + out)
+ 
+        urls = out.split("\n")
+        urls = filter(lambda a: a != '', urls)
+        
+        return urls
 
     def processUrl(self, source):
 
