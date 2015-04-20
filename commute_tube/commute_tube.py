@@ -13,6 +13,7 @@ import ntpath
 import hashlib
 import subprocess
 
+
 class CommuteTube():
 
     debug = None
@@ -146,7 +147,7 @@ class CommuteTube():
         prefix = ""
 
         if 'format' not in ydl.params and 'format_limit' not in ydl.params:
-            ydl.params['format'] = "bestvideo+bestaudio"
+            ydl.params['format'] = "bestvideo+bestaudio/best"
         if 'nooverwrites' not in ydl.params:
             ydl.params['nooverwrites'] = True
         if 'ignoreerrors' not in ydl.params:
