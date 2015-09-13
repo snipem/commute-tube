@@ -1,45 +1,43 @@
 {
-  "pen":
-  {
-  	"penPath" : "/mnt/commuteUSB",
-  	"downloadFolder" : "Download",
-  	"mountAndUnmount": "True",
-  	"debug" : "False"
-  },
-  "source":
-  [
-	  {
-	  	"description" : "Giant Bomb Quick Look",
-	    "url": "https://www.youtube.com/user/therealgiantbomb",
-	    "playlistend": 3,
-	    "matchtitle": "Quick Look"
-	  },
-	  {
-	  	"description" : "Champions League on Sky",
-	    "url": "https://www.youtube.com/playlist?list=PLykXdRRd47IXBd5C-CY0UwR6SE61OPjR0",
-	    "playlistend": 10
-	  },
-	  {
-	  	"description" : "Europa League on Sky",
-	    "url": "https://www.youtube.com/playlist?list=PLykXdRRd47IX_5gUChdhDjgKmQyZtRrC_",
-	    "playlistend": 10
-	  },
-	  {
-	  	"description" : "Watch later",
-	  	"url" : "https://www.youtube.com/feed/watch_later?gl=DE&hl=de",
-	  	"username" : "your_youtube_username",
-	  	"password" : "your_youtube_password"
-	  },
-	  {
-  		"description" : "Shellscript that lists youtube-dl urls line by line",
-  		"shellscript": "sh scripts/gamersyde.sh",
-  		"format" : "1080p60fps",
-  		"prefix" : "Gamersyde_"
-    },
-	  {
-  		"description" : "Durch die Nacht mit...",
-  		"shellscript": "elinks --dump http://www.arte.tv/guide/de/suchergebnisse?keyword=durch+die+nacht+mit | egrep '\/guide\/de\/[0-9]' | awk {'print $2'} | uniq",
-  		"prefix" : "Arte_"
-    },
-  ]
+   "pen" : {
+      "penPath" : "/mnt/commuteUSB",
+      "debug" : "False",
+      "mountAndUnmount" : "True",
+      "downloadFolder" : "Download"
+   },
+   "source" : [
+      {
+         "url" : "https://www.youtube.com/user/therealgiantbomb",
+         "description" : "Giant Bomb Quick Look",
+         "matchtitle" : "Quick Look",
+         "playlistend" : 3
+      },
+      {
+         "url" : "https://www.youtube.com/playlist?list=PLykXdRRd47IXBd5C-CY0UwR6SE61OPjR0",
+         "playlistend" : 10,
+         "description" : "Champions League on Sky"
+      },
+      {
+         "url" : "https://www.youtube.com/playlist?list=PLykXdRRd47IX_5gUChdhDjgKmQyZtRrC_",
+         "playlistend" : 10,
+         "description" : "Europa League on Sky"
+      },
+      {
+         "description" : "Watch later",
+         "username" : "your_youtube_username",
+         "url" : "https://www.youtube.com/feed/watch_later?gl=DE&hl=de",
+         "password" : "your_youtube_password"
+      },
+      {
+         "format" : "1080p60fps",
+         "shellscript" : "sh scripts/gamersyde.sh",
+         "prefix" : "Gamersyde_",
+         "description" : "Shellscript that lists youtube-dl urls line by line"
+      },
+      {
+         "shellscript" : "elinks --dump http://www.arte.tv/guide/de/suchergebnisse?keyword=durch+die+nacht+mit | egrep '/guide/de/[0-9]' | awk {'print $2'} | uniq",
+         "prefix" : "Arte_",
+         "description" : "Durch die Nacht mit..."
+      }
+   ]
 }
