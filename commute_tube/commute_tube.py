@@ -71,7 +71,8 @@ class CommuteTube():
         try:
             subprocess.check_call(["umount", path])
         except Exception, e:
-            self.log.error("Could not unmount " + path + " Error: " + e.message)
+            self.log.error("Could not unmount " +
+                           path + " Error: " + e.message)
             return False
         return True
 
@@ -120,12 +121,13 @@ class CommuteTube():
         self.log.info(
             "Processing shellscript: '" + shellscript + "'")
 
-        out = subprocess.Popen(["bash", "-c", shellscript], stdout=subprocess.PIPE).communicate()[0]
+        out = subprocess.Popen(["bash", "-c", shellscript],
+                               stdout=subprocess.PIPE).communicate()[0]
         self.log.debug("Shellscript output: " + out)
- 
+
         urls = out.split("\n")
         urls = filter(lambda a: a != '', urls)
-        
+
         return urls
 
     def processUrl(self, source):
