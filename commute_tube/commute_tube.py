@@ -27,11 +27,11 @@ class CommuteTube():
     mountAndUnmount = True
 
     def getConfig(self):
+        """Load config from config.json"""
         json_data = open('config.json')
         return json.load(json_data)
 
     def __init__(self):
-
         logFormatter = logging.Formatter(
             "%(asctime)s [%(levelname)-5.5s] [%(module)-12.12s]  %(message)s")
         rootLogger = logging.getLogger()
@@ -60,6 +60,10 @@ class CommuteTube():
         self.pathToDownloadFolder = self.penPath + "/" + self.downloadFolder
 
     def _mountUSB(self, path):
+        """Mounts device on given path using mount command
+
+        This method will only work on Unix machines
+        """
         try:
             subprocess.check_call(["mount", path])
         except Exception, e:
@@ -68,6 +72,10 @@ class CommuteTube():
         return True
 
     def _unmountUSB(self, path):
+        """Unmounts device on given path using umount command
+
+        This method will only work on Unix machines
+        """
         try:
             subprocess.check_call(["umount", path])
         except Exception, e:
@@ -77,10 +85,17 @@ class CommuteTube():
         return True
 
     def getRemainingDiskSizeInGigaByte(self):
+        """Calculates disk size in Gigabytes
+
+        This method is built to work on both OS X and Linux
+        """
         st = os.statvfs(self.pathToDownloadFolder)
         return st.f_bavail * st.f_frsize / 1024 / 1024 / 1024
 
     def mount(self):
+        """Mounts USB device on given path delivers True if successfull and False
+        if not
+        """
         if os.path.ismount(self.penPath) == False:
             self.log.info(
                 "There is no USB pen mounted under "
@@ -98,7 +113,9 @@ class CommuteTube():
                 + ". Processing further.")
 
     def unmount(self):
-        # Unmount USB pen after all work is done
+        """Unmounts USB device on given path delivers True if successfull and False
+        if not
+        """
         if self._unmountUSB(self.penPath) == True:
             self.log.info(
                 "USB Pen under " + self.penPath + " has been unmounted")
@@ -110,12 +127,13 @@ class CommuteTube():
             return False
 
     def createDownloadFolder(self):
+        """Creates download folder on configured download folder location"""
         if os.path.exists(self.pathToDownloadFolder) == False:
             self.log.info("Creating folder " + self.pathToDownloadFolder)
             os.mkdir(self.pathToDownloadFolder)
 
     def processShellscript(self, source):
-
+        """Runs a shellscript and returns it's output line by line as a list"""
         shellscript = source['shellscript']
 
         self.log.info(
@@ -131,7 +149,11 @@ class CommuteTube():
         return urls
 
     def processUrl(self, source):
+        """Main method for processing urls
 
+        This method basically hands over the configuration to YoutubeDL and repeats
+        the step until every source in the configuration was read
+        """
         ydl = YoutubeDL()
         ydl.add_default_info_extractors()
 
@@ -175,6 +197,12 @@ class CommuteTube():
         ydl.download([source['url']])
 
     def processPath(self, source):
+        """Main method for processing paths
+
+        When a path is processed the source file is compared with the possibly
+        inplace target file. If different or not existant, the source file is
+        copied
+        """
 
         sourcePath = source['path'].decode()
         sourceDescription = ""
@@ -207,6 +235,17 @@ class CommuteTube():
                 " was already in place with same 100 byte digest")
 
     def filesAreDifferent(self, src, dest):
+        """Compares the first 100 bytes of two files and returns True if different,
+        and False if not
+
+        The comparison of only the first 100 bytes is made for performance reasons.
+        Files to be copied are most likely video files and therefore very likely
+        different within the first bytes.
+
+        TODO
+        This method will be false positive if only the first 100 bytes match. For
+        example a not completely copied file will not be different.
+        """
         byteSize = 100
 
         print src
@@ -225,7 +264,12 @@ class CommuteTube():
             return True
 
     def run(self):
+        """Main method for processing sources
 
+        This method mounts the USB pen, calculates the disk space left before and after,
+        runs all sources, one at a time, evaluates a file delta and writes playlists
+        for all files and all new files. Finally, the USB pen will be unmounted.
+        """
         try:
 
             if self.mountAndUnmount is True and self.mount() is False:
@@ -306,10 +350,13 @@ class CommuteTube():
                 self.unmount()
 
     def writePlaylist(self, files, name):
+        """Writes a playlist consisting of all files given as parameter"""
         f = open(self.pathToDownloadFolder + '/' + name + '.m3u', 'w')
         f.write("\n".join(files).encode('UTF-8'))
 
     def checkForPen(self):
+        """This method checks if a pen is present or not. Exits with exit code 1
+        if not. Else exit code 0."""
         if os.path.ismount(self.penPath) == False:
             self.log.info("USB Pen is not mounted under " + self.penPath)
             if self._mountUSB(self.penPath) == True:
