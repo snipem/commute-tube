@@ -25,7 +25,6 @@ class CommuteTube():
     pathToDownloadFolder = ""
     logFile = "commute-tube.log"
     mountAndUnmount = True
-    downloadedFiles = []
 
     def getConfig(self):
         """Load config from config.json"""
@@ -184,7 +183,6 @@ class CommuteTube():
 
         ydl.params['restrictfilenames'] = True
         ydl.params['logger'] = self.ydlLog
-        ydl.add_progress_hook(self.logHook)
 
         outtmpl = self.pathToDownloadFolder + "/" + prefix + \
             u'%(uploader)s-%(title)s-%(id)s.%(ext)s'
@@ -197,12 +195,6 @@ class CommuteTube():
             ydl.params['simulate'] = True
 
         ydl.download([source['url']])
-
-    def logHook(self, d):
-        """Hook for intercepting YoutubeDL messages regarding download progress"""
-        if d['status'] == 'finished':
-            self.downloadedFiles.append(os.path.basename(d['filename']))
-        exit
 
     def processPath(self, source):
         """Main method for processing paths
@@ -286,8 +278,11 @@ class CommuteTube():
             self.createDownloadFolder()
 
             diskSizeBefore = self.getRemainingDiskSizeInGigaByte()
+            filesBefore = os.listdir(self.pathToDownloadFolder)
 
             self.log.info("Remaining disk size: %.2f GB" % diskSizeBefore)
+
+            downloadedFiles = []
 
             self.log.debug(
                 "Running with YoutubeDL version as of " +
@@ -308,7 +303,7 @@ class CommuteTube():
                             filename = self.processUrl(source)
 
                     if (filename is not None):
-                        self.downloadedFiles.append(filename)
+                        downloadedFiles.append(filename)
 
                 except Exception, e:
                     print e
@@ -316,9 +311,15 @@ class CommuteTube():
                         "Error while processing source. Message: '" +
                         e.message + "'")
 
-            self.downloadedFiles = sorted(self.downloadedFiles)
+            filesAfter = os.listdir(self.pathToDownloadFolder)
 
-            for downloadedFile in self.downloadedFiles:
+            filesDelta = sorted(list(set(filesAfter) - set(filesBefore)))
+            for fileDelta in filesDelta:
+                downloadedFiles.append(fileDelta)
+
+            downloadedFiles = sorted(downloadedFiles)
+
+            for downloadedFile in downloadedFiles:
                 self.log.info("Downloaded: " + downloadedFile)
 
             diskSizeAfter = self.getRemainingDiskSizeInGigaByte()
@@ -334,7 +335,7 @@ class CommuteTube():
             # TODO Add configuration option here
             if (True):
                 self.log.debug("Writing playlist for new files")
-                self.writePlaylist(self.downloadedFiles, "new")
+                self.writePlaylist(downloadedFiles, "new")
 
             # Copy log file to USB pen
             logFileDestination = self.pathToDownloadFolder + "/" + self.logFile
