@@ -26,7 +26,6 @@ class CommuteTube():
     logFile = "commute-tube.log"
     mountAndUnmount = True
     downloadedFiles = []
-    lastLoggedFracture = 0
 
     def getConfig(self):
         """Load config from config.json"""
@@ -47,14 +46,8 @@ class CommuteTube():
         consoleHandler.setFormatter(logFormatter)
         rootLogger.addHandler(consoleHandler)
 
-        #Mute YoutubeDL logger
-        consoleHandler = logging.StreamHandler()
-        noneLogging = logging.getLogger('testlog')
-        noneLogging.addHandler(consoleHandler)
-        noneLogging.setLevel(logging.INFO)
-
         self.log = logging
-        self.ydlLog = noneLogging
+        self.ydlLog = logging
 
         self.config = self.getConfig()
         self.penPath = self.config['pen']['penPath']
@@ -207,20 +200,9 @@ class CommuteTube():
 
     def logHook(self, d):
         """Hook for intercepting YoutubeDL messages regarding download progress"""
-        basename = os.path.basename(d['filename'])
-
-        percentage = float(d['downloaded_bytes']/d['total_bytes']*100)
-        fracture = int(percentage/10)
-
-        if d['status'] == 'downloading' and self.lastLoggedFracture != fracture:
-            self.log.debug(d['_percent_str'] + " ... " + basename + " downloading at " + d['_speed_str'])
-            lastLoggedFracture = fracture
-
         if d['status'] == 'finished':
-
-            self.log.info("* " + basename + " downloaded with size " + d['_total_bytes_str'])
-            self.downloadedFiles.append(basename)
-            lastLoggedFracture = 0
+            self.downloadedFiles.append(os.path.basename(d['filename']))
+        exit
 
     def processPath(self, source):
         """Main method for processing paths
