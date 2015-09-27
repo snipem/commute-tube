@@ -12,7 +12,6 @@ def mountUSB(path):
     try:
         subprocess.check_call(["mount", path])
     except Exception, e:
-        #self.log.error("Could not mount " + path + " Error: " + e.message)
         return False
     return True
 
@@ -24,10 +23,13 @@ def unmountUSB(path):
     try:
         subprocess.check_call(["umount", path])
     except Exception, e:
-        #self.log.error("Could not unmount " +
-        #               path + " Error: " + e.message)
         return False
     return True
+
+def createDownloadFolder(pathToDownloadFolder):
+    """Creates download folder on configured download folder location"""
+    if os.path.exists(pathToDownloadFolder) == False:
+        os.mkdir(pathToDownloadFolder)
 
 def getRemainingDiskSizeInGigaByte(pathToDownloadFolder):
     """Calculates disk size in Gigabytes
@@ -64,3 +66,8 @@ def filesAreDifferent(src, dest):
         return False
     else:
         return True
+
+def writePlaylist(pathToDownloadFolder, files, name):
+    """Writes a playlist consisting of all files given as parameter"""
+    f = open(pathToDownloadFolder + '/' + name + '.m3u', 'w')
+    f.write("\n".join(files).encode('UTF-8'))

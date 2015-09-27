@@ -9,7 +9,6 @@ import os
 import sys
 import logging
 import json
-import subprocess
 import shutil
 import ntpath
 import subprocess
@@ -60,8 +59,6 @@ class CommuteTube():
 
         self.pathToDownloadFolder = self.penPath + "/" + self.downloadFolder
 
-
-
     def mount(self):
         """Mounts USB device on given path delivers True if successfull and False
         if not
@@ -95,12 +92,6 @@ class CommuteTube():
                 "USB Pen under " + self.penPath
                 + " has not been successfully unmounted")
             return False
-
-    def createDownloadFolder(self):
-        """Creates download folder on configured download folder location"""
-        if os.path.exists(self.pathToDownloadFolder) == False:
-            self.log.info("Creating folder " + self.pathToDownloadFolder)
-            os.mkdir(self.pathToDownloadFolder)
 
     def processShellscript(self, source):
         """Runs a shellscript and returns it's output line by line as a list"""
@@ -218,7 +209,7 @@ class CommuteTube():
             if self.mountAndUnmount is True and self.mount() is False:
                 sys.exit(1)
 
-            self.createDownloadFolder()
+            createDownloadFolder(self.pathToDownloadFolder)
 
             diskSizeBefore = getRemainingDiskSizeInGigaByte(self.pathToDownloadFolder)
             filesBefore = os.listdir(self.pathToDownloadFolder)
@@ -273,12 +264,12 @@ class CommuteTube():
             # TODO Add configuration option here
             if (True):
                 self.log.debug("Writing playlist for all files")
-                self.writePlaylist(allFiles, "all")
+                writePlaylist(self.pathToDownloadFolder, allFiles, "all")
 
             # TODO Add configuration option here
             if (True):
                 self.log.debug("Writing playlist for new files")
-                self.writePlaylist(downloadedFiles, "new")
+                writePlaylist(self.pathToDownloadFolder, downloadedFiles, "new")
 
             # Copy log file to USB pen
             logFileDestination = self.pathToDownloadFolder + "/" + self.logFile
@@ -291,11 +282,6 @@ class CommuteTube():
         finally:
             if self.mountAndUnmount is True:
                 self.unmount()
-
-    def writePlaylist(self, files, name):
-        """Writes a playlist consisting of all files given as parameter"""
-        f = open(self.pathToDownloadFolder + '/' + name + '.m3u', 'w')
-        f.write("\n".join(files).encode('UTF-8'))
 
     def checkForPen(self):
         """This method checks if a pen is present or not. Exits with exit code 1
