@@ -306,10 +306,10 @@ class CommuteTube():
                         downloadedFiles.append(filename)
 
                 except Exception, e:
-                    print e
                     self.log.error(
                         "Error while processing source. Message: '" +
                         e.message + "'")
+                    self.log.exception(e)
 
             filesAfter = os.listdir(self.pathToDownloadFolder)
 
@@ -343,7 +343,7 @@ class CommuteTube():
             self.log.debug("Log file has been copied to " + logFileDestination)
 
         except Exception, e:
-            self.log.error(e)
+            self.log.exception(e)
             raise e
         finally:
             if self.mountAndUnmount is True:
