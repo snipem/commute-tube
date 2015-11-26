@@ -25,6 +25,7 @@ class CommuteTube():
     pathToDownloadFolder = ""
     logFile = "commute-tube.log"
     mountAndUnmount = True
+    delete = False
 
     def getConfig(self):
         """Load config from config.json"""
