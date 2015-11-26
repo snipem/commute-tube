@@ -300,12 +300,12 @@ class CommuteTube():
         if not. Else exit code 0."""
         if os.path.ismount(self.penPath) == False:
             self.log.info("USB Pen is not mounted under " + self.penPath)
-            if mountUSB(self.penPath) == True:
+            if file_utils.mountUSB(self.penPath) == True:
                 self.log.info("USB Pen has been successfully mounted")
             else:
                 sys.exit(1)
 
-            if unmountUSB(self.penPath) == True:
+            if file_utils.unmountUSB(self.penPath) == True:
                 self.log.info("USB Pen has been successfully unmounted")
             else:
                 sys.exit(1)
