@@ -3,14 +3,14 @@
 from __future__ import division
 from youtube_dl import YoutubeDL
 from youtube_dl import version as YoutubeDL_version
+import file_utils
+
 import os
 import sys
 import logging
 import json
-import subprocess
 import shutil
 import ntpath
-import hashlib
 import subprocess
 
 
@@ -57,40 +57,13 @@ class CommuteTube():
         if self.config['pen']['debug'] == "True":
             self.debug = True
 
+        if 'delete' in self.config['pen']:
+            self.delete = True
+            self.deleteStrategy = self.config['pen']['delete']['strategy']
+            self.deleteFreeSpace = self.config['pen']['delete']['freeSpace']
+            self.deleteExclude = self.config['pen']['delete']['exclude']
+
         self.pathToDownloadFolder = self.penPath + "/" + self.downloadFolder
-
-    def _mountUSB(self, path):
-        """Mounts device on given path using mount command
-
-        This method will only work on Unix machines
-        """
-        try:
-            subprocess.check_call(["mount", path])
-        except Exception, e:
-            self.log.error("Could not mount " + path + " Error: " + e.message)
-            return False
-        return True
-
-    def _unmountUSB(self, path):
-        """Unmounts device on given path using umount command
-
-        This method will only work on Unix machines
-        """
-        try:
-            subprocess.check_call(["umount", path])
-        except Exception, e:
-            self.log.error("Could not unmount " +
-                           path + " Error: " + e.message)
-            return False
-        return True
-
-    def getRemainingDiskSizeInGigaByte(self):
-        """Calculates disk size in Gigabytes
-
-        This method is built to work on both OS X and Linux
-        """
-        st = os.statvfs(self.pathToDownloadFolder)
-        return st.f_bavail * st.f_frsize / 1024 / 1024 / 1024
 
     def mount(self):
         """Mounts USB device on given path delivers True if successfull and False
@@ -101,7 +74,7 @@ class CommuteTube():
                 "There is no USB pen mounted under "
                 + self.penPath + ". Trying to mount it.")
 
-            if self._mountUSB(self.penPath) == False:
+            if file_utils.mountUSB(self.penPath) == False:
                 self.log.info("Could not mount USB pen under " + self.penPath)
                 return False
             else:
@@ -116,7 +89,7 @@ class CommuteTube():
         """Unmounts USB device on given path delivers True if successfull and False
         if not
         """
-        if self._unmountUSB(self.penPath) == True:
+        if unmountUSB(self.penPath) == True:
             self.log.info(
                 "USB Pen under " + self.penPath + " has been unmounted")
             return True
@@ -125,12 +98,6 @@ class CommuteTube():
                 "USB Pen under " + self.penPath
                 + " has not been successfully unmounted")
             return False
-
-    def createDownloadFolder(self):
-        """Creates download folder on configured download folder location"""
-        if os.path.exists(self.pathToDownloadFolder) == False:
-            self.log.info("Creating folder " + self.pathToDownloadFolder)
-            os.mkdir(self.pathToDownloadFolder)
 
     def processShellscript(self, source):
         """Runs a shellscript and returns it's output line by line as a list"""
@@ -222,7 +189,7 @@ class CommuteTube():
             self.log.debug(
                 "+ File " + filename + " did not exist, has been copied")
             return filename
-        elif self.filesAreDifferent(src, dest):
+        elif filesAreDifferent(src, dest):
             shutil.copy2(src, dest)
             self.log.debug(
                 "+ File " + filename +
@@ -234,34 +201,7 @@ class CommuteTube():
                 " has not been copied," +
                 " was already in place with same 100 byte digest")
 
-    def filesAreDifferent(self, src, dest):
-        """Compares the first 100 bytes of two files and returns True if different,
-        and False if not
 
-        The comparison of only the first 100 bytes is made for performance reasons.
-        Files to be copied are most likely video files and therefore very likely
-        different within the first bytes.
-
-        TODO
-        This method will be false positive if only the first 100 bytes match. For
-        example a not completely copied file will not be different.
-        """
-        byteSize = 100
-
-        print src
-        print dest
-        s = open(src, 'rb')
-        srcDigest = hashlib.sha224(s.read(byteSize)).digest()
-        d = open(dest, 'rb')
-        destDigest = hashlib.sha224(d.read(byteSize)).digest()
-
-        s.close()
-        d.close()
-
-        if srcDigest == destDigest:
-            return False
-        else:
-            return True
 
     def run(self):
         """Main method for processing sources
@@ -275,9 +215,15 @@ class CommuteTube():
             if self.mountAndUnmount is True and self.mount() is False:
                 sys.exit(1)
 
-            self.createDownloadFolder()
+            file_utils.createDownloadFolder(self.pathToDownloadFolder)
 
-            diskSizeBefore = self.getRemainingDiskSizeInGigaByte()
+            if self.delete == True:
+                self.log.info("Freeing space")
+                if (self.deleteStrategy == "DeleteFolder"):
+                    self.log.debug("Using DeleteFolder strategy for deletion")
+                    self.freeSpaceByMovingToDeleteFolder(self.pathToDownloadFolder, self.deleteFreeSpace, self.deleteExclude)
+
+            diskSizeBefore = file_utils.getRemainingDiskSizeInGigaByte(self.pathToDownloadFolder)
             filesBefore = os.listdir(self.pathToDownloadFolder)
 
             self.log.info("Remaining disk size: %.2f GB" % diskSizeBefore)
@@ -322,7 +268,7 @@ class CommuteTube():
             for downloadedFile in downloadedFiles:
                 self.log.info("Downloaded: " + downloadedFile)
 
-            diskSizeAfter = self.getRemainingDiskSizeInGigaByte()
+            diskSizeAfter = file_utils.getRemainingDiskSizeInGigaByte(self.pathToDownloadFolder)
             self.log.info("Remaining disk size: %.2f GB" % diskSizeAfter)
 
             allFiles = sorted(os.listdir(self.pathToDownloadFolder))
@@ -330,12 +276,12 @@ class CommuteTube():
             # TODO Add configuration option here
             if (True):
                 self.log.debug("Writing playlist for all files")
-                self.writePlaylist(allFiles, "all")
+                file_utils.writePlaylist(self.pathToDownloadFolder, allFiles, "all")
 
             # TODO Add configuration option here
             if (True):
                 self.log.debug("Writing playlist for new files")
-                self.writePlaylist(downloadedFiles, "new")
+                file_utils.writePlaylist(self.pathToDownloadFolder, downloadedFiles, "new")
 
             # Copy log file to USB pen
             logFileDestination = self.pathToDownloadFolder + "/" + self.logFile
@@ -349,22 +295,17 @@ class CommuteTube():
             if self.mountAndUnmount is True:
                 self.unmount()
 
-    def writePlaylist(self, files, name):
-        """Writes a playlist consisting of all files given as parameter"""
-        f = open(self.pathToDownloadFolder + '/' + name + '.m3u', 'w')
-        f.write("\n".join(files).encode('UTF-8'))
-
     def checkForPen(self):
         """This method checks if a pen is present or not. Exits with exit code 1
         if not. Else exit code 0."""
         if os.path.ismount(self.penPath) == False:
             self.log.info("USB Pen is not mounted under " + self.penPath)
-            if self._mountUSB(self.penPath) == True:
+            if mountUSB(self.penPath) == True:
                 self.log.info("USB Pen has been successfully mounted")
             else:
                 sys.exit(1)
 
-            if self._unmountUSB(self.penPath) == True:
+            if unmountUSB(self.penPath) == True:
                 self.log.info("USB Pen has been successfully unmounted")
             else:
                 sys.exit(1)
@@ -374,6 +315,15 @@ class CommuteTube():
         else:
             self.log.info("USB Pen is already mounted under " + self.penPath)
             sys.exit(0)
+
+
+    def freeSpaceByMovingToDeleteFolder(self, pathToDownloadFolder, spaceToFree, exclude):
+        self.log.info("Delete 'delete' folder")
+        file_utils.deleteFilesInDeleteFolder(pathToDownloadFolder)
+
+        self.log.info("Moving files to 'delete' folder")
+        filesToBeMoved = file_utils.getFilenamesForDeletion(pathToDownloadFolder, spaceToFree, exclude)
+        file_utils.moveFilesToDeleteFolder(pathToDownloadFolder, filesToBeMoved)
 
     def main(self):
         self.run()
