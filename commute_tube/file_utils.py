@@ -4,6 +4,7 @@ import os
 import sys
 import hashlib
 import shutil
+import subprocess
 
 def mountUSB(path):
     """Mounts device on given path using mount command
