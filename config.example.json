@@ -3,7 +3,12 @@
       "penPath" : "/mnt/commuteUSB",
       "debug" : "False",
       "mountAndUnmount" : "True",
-      "downloadFolder" : "Download"
+      "downloadFolder" : "Download",
+      "delete" : {
+         "strategy" : "DeleteFolder",
+         "freeSpace" : "5G",
+         "exclude" : ["Sportschau-1.mp4", "Sportschau-2.mp4"]
+      }
    },
    "source" : [
       {

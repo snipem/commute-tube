@@ -3,6 +3,7 @@
 import os
 import sys
 import hashlib
+import shutil
 
 def mountUSB(path):
     """Mounts device on given path using mount command
@@ -36,8 +37,15 @@ def getRemainingDiskSizeInGigaByte(pathToDownloadFolder):
 
     This method is built to work on both OS X and Linux
     """
+    return getRemainingDiskSizeInByte(pathToDownloadFolder) / 1024 / 1024 / 1024
+
+def getRemainingDiskSizeInByte(pathToDownloadFolder):
+    """Calculates disk size in bytes
+
+    This method is built to work on both OS X and Linux
+    """
     st = os.statvfs(pathToDownloadFolder)
-    return st.f_bavail * st.f_frsize / 1024 / 1024 / 1024
+    return st.f_bavail * st.f_frsize
 
 def filesAreDifferent(src, dest):
     """Compares the first 100 bytes of two files and returns True if different,
@@ -71,3 +79,51 @@ def writePlaylist(pathToDownloadFolder, files, name):
     """Writes a playlist consisting of all files given as parameter"""
     f = open(pathToDownloadFolder + '/' + name + '.m3u', 'w')
     f.write("\n".join(files).encode('UTF-8'))
+
+def getFilenamesForDeletion(pathToDownloadFolder, spaceToFree, exclude):
+    """Frees space in download folder until free space is reached. Files
+    can be excluded to be not put into consideration for deletion"""
+    import humanfriendly
+    print pathToDownloadFolder
+    filesToBeDeleted = []
+    bytesToFree = humanfriendly.parse_size(spaceToFree)
+
+    exclude.append("delete")
+
+    if (getRemainingDiskSizeInByte(pathToDownloadFolder) < bytesToFree):
+
+        filesInFolder = [os.path.join(pathToDownloadFolder, f) for f in os.listdir(pathToDownloadFolder)]
+        #filesInFolder = os.listdir(pathToDownloadFolder)
+        print filesInFolder
+        files = sorted(filesInFolder, key=os.path.getctime)
+        oldFilesInSize = 0
+
+        for file in files:
+            head, filename = os.path.split(file)
+            size = os.path.getsize(file)
+
+            if (filename not in exclude):
+                bytesToBeFreed = oldFilesInSize + size
+                filesToBeDeleted.append(file)
+
+                if (bytesToBeFreed >= bytesToFree):
+                    break
+
+    return filesToBeDeleted
+
+def deleteFilesInDeleteFolder(pathToDownloadFolder):
+    """Deletes all files in the subfolder 'delete'"""
+
+    if (not os.path.isdir(pathToDownloadFolder+"/delete")):
+        os.mkdir(pathToDownloadFolder+"/delete")
+
+    files = sorted(os.listdir(pathToDownloadFolder + "/delete/"))
+    for file in files:
+        os.remove(pathToDownloadFolder + "/delete/" + file)
+
+def moveFilesToDeleteFolder(pathToDownloadFolder, filesToBeMoved):
+    """Moves all files to 'delete' folder"""
+
+    for file in filesToBeMoved:
+        head, filename = os.path.split(file)
+        shutil.move(file, pathToDownloadFolder + "/delete/" + filename)

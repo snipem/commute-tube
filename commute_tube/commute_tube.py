@@ -3,7 +3,7 @@
 from __future__ import division
 from youtube_dl import YoutubeDL
 from youtube_dl import version as YoutubeDL_version
-from file_utils import *
+import file_utils
 
 import os
 import sys
@@ -56,6 +56,12 @@ class CommuteTube():
             self.mountAndUnmount = False
         if self.config['pen']['debug'] == "True":
             self.debug = True
+
+        if 'delete' in self.config['pen']:
+            self.delete = True
+            self.deleteStrategy = self.config['pen']['delete']['strategy']
+            self.deleteFreeSpace = self.config['pen']['delete']['freeSpace']
+            self.deleteExclude = self.config['pen']['delete']['exclude']
 
         self.pathToDownloadFolder = self.penPath + "/" + self.downloadFolder
 
@@ -209,9 +215,15 @@ class CommuteTube():
             if self.mountAndUnmount is True and self.mount() is False:
                 sys.exit(1)
 
-            createDownloadFolder(self.pathToDownloadFolder)
+            file_utils.createDownloadFolder(self.pathToDownloadFolder)
 
-            diskSizeBefore = getRemainingDiskSizeInGigaByte(self.pathToDownloadFolder)
+            if self.delete == True:
+                self.log.info("Freeing space")
+                if (self.deleteStrategy == "DeleteFolder"):
+                    self.log.debug("Using DeleteFolder strategy for deletion")
+                    self.freeSpaceByMovingToDeleteFolder(self.pathToDownloadFolder, self.deleteFreeSpace, self.deleteExclude)
+
+            diskSizeBefore = file_utils.getRemainingDiskSizeInGigaByte(self.pathToDownloadFolder)
             filesBefore = os.listdir(self.pathToDownloadFolder)
 
             self.log.info("Remaining disk size: %.2f GB" % diskSizeBefore)
@@ -256,7 +268,7 @@ class CommuteTube():
             for downloadedFile in downloadedFiles:
                 self.log.info("Downloaded: " + downloadedFile)
 
-            diskSizeAfter = getRemainingDiskSizeInGigaByte(self.pathToDownloadFolder)
+            diskSizeAfter = file_utils.getRemainingDiskSizeInGigaByte(self.pathToDownloadFolder)
             self.log.info("Remaining disk size: %.2f GB" % diskSizeAfter)
 
             allFiles = sorted(os.listdir(self.pathToDownloadFolder))
@@ -264,12 +276,12 @@ class CommuteTube():
             # TODO Add configuration option here
             if (True):
                 self.log.debug("Writing playlist for all files")
-                writePlaylist(self.pathToDownloadFolder, allFiles, "all")
+                file_utils.writePlaylist(self.pathToDownloadFolder, allFiles, "all")
 
             # TODO Add configuration option here
             if (True):
                 self.log.debug("Writing playlist for new files")
-                writePlaylist(self.pathToDownloadFolder, downloadedFiles, "new")
+                file_utils.writePlaylist(self.pathToDownloadFolder, downloadedFiles, "new")
 
             # Copy log file to USB pen
             logFileDestination = self.pathToDownloadFolder + "/" + self.logFile
@@ -277,7 +289,7 @@ class CommuteTube():
             self.log.debug("Log file has been copied to " + logFileDestination)
 
         except Exception, e:
-            self.log.error(e)
+            self.log.exception(e)
             raise e
         finally:
             if self.mountAndUnmount is True:
@@ -303,6 +315,15 @@ class CommuteTube():
         else:
             self.log.info("USB Pen is already mounted under " + self.penPath)
             sys.exit(0)
+
+
+    def freeSpaceByMovingToDeleteFolder(self, pathToDownloadFolder, spaceToFree, exclude):
+        self.log.info("Delete 'delete' folder")
+        file_utils.deleteFilesInDeleteFolder(pathToDownloadFolder)
+
+        self.log.info("Moving files to 'delete' folder")
+        filesToBeMoved = file_utils.getFilenamesForDeletion(pathToDownloadFolder, spaceToFree, exclude)
+        file_utils.moveFilesToDeleteFolder(pathToDownloadFolder, filesToBeMoved)
 
     def main(self):
         self.run()
