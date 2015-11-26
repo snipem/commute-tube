@@ -89,7 +89,7 @@ class CommuteTube():
         """Unmounts USB device on given path delivers True if successfull and False
         if not
         """
-        if unmountUSB(self.penPath) == True:
+        if file_utils.unmountUSB(self.penPath) == True:
             self.log.info(
                 "USB Pen under " + self.penPath + " has been unmounted")
             return True
