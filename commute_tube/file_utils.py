@@ -5,6 +5,23 @@ import sys
 import hashlib
 import shutil
 import subprocess
+import logging
+import humanfriendly
+
+logFormatter = logging.Formatter(
+    "%(asctime)s [%(levelname)-5.5s] [%(module)-12.12s]  %(message)s")
+rootLogger = logging.getLogger()
+rootLogger.setLevel(logging.DEBUG)
+
+fileHandler = logging.FileHandler("file_utils.log", mode='w')
+fileHandler.setFormatter(logFormatter)
+rootLogger.addHandler(fileHandler)
+
+consoleHandler = logging.StreamHandler()
+consoleHandler.setFormatter(logFormatter)
+rootLogger.addHandler(consoleHandler)
+
+log = logging
 
 def mountUSB(path):
     """Mounts device on given path using mount command
@@ -14,6 +31,7 @@ def mountUSB(path):
     try:
         subprocess.check_call(["mount", path])
     except Exception, e:
+        log.exception(e)
         return False
     return True
 
@@ -25,6 +43,7 @@ def unmountUSB(path):
     try:
         subprocess.check_call(["umount", path])
     except Exception, e:
+        log.exception(e)
         return False
     return True
 
@@ -33,12 +52,12 @@ def createDownloadFolder(pathToDownloadFolder):
     if os.path.exists(pathToDownloadFolder) == False:
         os.mkdir(pathToDownloadFolder)
 
-def getRemainingDiskSizeInGigaByte(pathToDownloadFolder):
-    """Calculates disk size in Gigabytes
+def getRemainingDiskSizeHumanFriendly(pathToDownloadFolder):
+    """Calculates disk size humanfriendly form
 
     This method is built to work on both OS X and Linux
     """
-    return getRemainingDiskSizeInByte(pathToDownloadFolder) / 1024 / 1024 / 1024
+    return humanfriendly.format_size(getRemainingDiskSizeInByte(pathToDownloadFolder))
 
 def getRemainingDiskSizeInByte(pathToDownloadFolder):
     """Calculates disk size in bytes
@@ -84,18 +103,15 @@ def writePlaylist(pathToDownloadFolder, files, name):
 def getFilenamesForDeletion(pathToDownloadFolder, spaceToFree, exclude):
     """Frees space in download folder until free space is reached. Files
     can be excluded to be not put into consideration for deletion"""
-    import humanfriendly
-    print pathToDownloadFolder
     filesToBeDeleted = []
     bytesToFree = humanfriendly.parse_size(spaceToFree)
 
     exclude.append("delete")
 
+    log.debug("Freeing space in " + pathToDownloadFolder + " if " + str(getRemainingDiskSizeInByte(pathToDownloadFolder)) + " < " + str(bytesToFree))
     if (getRemainingDiskSizeInByte(pathToDownloadFolder) < bytesToFree):
 
         filesInFolder = [os.path.join(pathToDownloadFolder, f) for f in os.listdir(pathToDownloadFolder)]
-        #filesInFolder = os.listdir(pathToDownloadFolder)
-        print filesInFolder
         files = sorted(filesInFolder, key=os.path.getctime)
         oldFilesInSize = 0
 
@@ -103,12 +119,18 @@ def getFilenamesForDeletion(pathToDownloadFolder, spaceToFree, exclude):
             head, filename = os.path.split(file)
             size = os.path.getsize(file)
 
+            log.debug("Looking for " +filename + " in ", exclude)
+
             if (filename not in exclude):
                 bytesToBeFreed = oldFilesInSize + size
                 filesToBeDeleted.append(file)
+                log.debug("Appended " + file)
 
                 if (bytesToBeFreed >= bytesToFree):
+                    log.debug(humanfriendly.format_size(bytesToBeFreed) + " where found and are to be moved")
                     break
+                else:
+                    log.debug(humanfriendly.format_size(bytesToBeFreed) + "/" + humanfriendly.format_size(bytesToFree) + " found for deletion")
 
     return filesToBeDeleted
 
@@ -121,6 +143,7 @@ def deleteFilesInDeleteFolder(pathToDownloadFolder):
     files = sorted(os.listdir(pathToDownloadFolder + "/delete/"))
     for file in files:
         os.remove(pathToDownloadFolder + "/delete/" + file)
+        log.debug("Deleted " + file)
 
 def moveFilesToDeleteFolder(pathToDownloadFolder, filesToBeMoved):
     """Moves all files to 'delete' folder"""
@@ -128,3 +151,4 @@ def moveFilesToDeleteFolder(pathToDownloadFolder, filesToBeMoved):
     for file in filesToBeMoved:
         head, filename = os.path.split(file)
         shutil.move(file, pathToDownloadFolder + "/delete/" + filename)
+        log.debug("Moved " + file + " to delete folder")

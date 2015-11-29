@@ -190,7 +190,7 @@ class CommuteTube():
             self.log.debug(
                 "+ File " + filename + " did not exist, has been copied")
             return filename
-        elif filesAreDifferent(src, dest):
+        elif file_utils.filesAreDifferent(src, dest):
             shutil.copy2(src, dest)
             self.log.debug(
                 "+ File " + filename +
@@ -224,10 +224,10 @@ class CommuteTube():
                     self.log.debug("Using DeleteFolder strategy for deletion")
                     self.freeSpaceByMovingToDeleteFolder(self.pathToDownloadFolder, self.deleteFreeSpace, self.deleteExclude)
 
-            diskSizeBefore = file_utils.getRemainingDiskSizeInGigaByte(self.pathToDownloadFolder)
+            diskSizeBefore = file_utils.getRemainingDiskSizeHumanFriendly(self.pathToDownloadFolder)
             filesBefore = os.listdir(self.pathToDownloadFolder)
 
-            self.log.info("Remaining disk size: %.2f GB" % diskSizeBefore)
+            self.log.info("Remaining disk size: " + diskSizeBefore)
 
             downloadedFiles = []
 
@@ -269,8 +269,8 @@ class CommuteTube():
             for downloadedFile in downloadedFiles:
                 self.log.info("Downloaded: " + downloadedFile)
 
-            diskSizeAfter = file_utils.getRemainingDiskSizeInGigaByte(self.pathToDownloadFolder)
-            self.log.info("Remaining disk size: %.2f GB" % diskSizeAfter)
+            diskSizeAfter = file_utils.getRemainingDiskSizeHumanFriendly(self.pathToDownloadFolder)
+            self.log.info("Remaining disk size: " + diskSizeAfter)
 
             allFiles = sorted(os.listdir(self.pathToDownloadFolder))
 

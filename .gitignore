@@ -10,3 +10,5 @@ commute-tube.log
 
 commute_tube/youtube_dl/
 youtube-dl/
+
+*.log
