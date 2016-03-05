@@ -17,10 +17,6 @@ fileHandler = logging.FileHandler("file_utils.log", mode='w')
 fileHandler.setFormatter(logFormatter)
 rootLogger.addHandler(fileHandler)
 
-consoleHandler = logging.StreamHandler()
-consoleHandler.setFormatter(logFormatter)
-rootLogger.addHandler(consoleHandler)
-
 log = logging
 
 def mountUSB(path):
