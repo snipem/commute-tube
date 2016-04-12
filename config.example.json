@@ -40,6 +40,12 @@
          "description" : "Shellscript that lists youtube-dl urls line by line"
       },
       {
+          "description": "Soundtrack Playlist",
+          "url" : "https://www.youtube.com/playlist?list=PlayListWithSoundtracks",
+          "format": "bestaudio/best",
+          "outtmpl": "%(title)s.%(ext)s"
+      },
+      {
          "shellscript" : "elinks --dump http://www.arte.tv/guide/de/suchergebnisse?keyword=durch+die+nacht+mit | egrep '/guide/de/[0-9]' | awk {'print $2'} | uniq",
          "prefix" : "Arte_",
          "description" : "Durch die Nacht mit..."
