@@ -48,7 +48,7 @@ class CommuteTubeLoggingHandler(logging.FileHandler):
             color:red;
         }
 
-        .WARN {
+        .WARNING {
             opacity: 0.5;
             color:orange;
         }
@@ -65,7 +65,7 @@ class CommuteTubeLoggingHandler(logging.FileHandler):
 
         prefix = ""
 
-        if ("[K[download]" in record.msg and not self.downloadInProgress):
+        if ("[download]" in record.msg and not self.downloadInProgress):
             prefix = "<div class='downloadprocess'>"
             self.downloadInProgress = True
         elif (self.downloadInProgress and not "[K[download]" in record.msg):
