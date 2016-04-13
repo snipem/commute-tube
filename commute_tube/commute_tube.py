@@ -298,6 +298,12 @@ class CommuteTube():
             shutil.copyfile(self.logFile, logFileDestination)
             self.log.debug("Log file has been copied to " + logFileDestination)
 
+            # TODO Strip one of these 
+            # Copy html log file to USB pen
+            logFileDestination = self.pathToDownloadFolder + "/" + self.logFile + ".html"
+            shutil.copyfile(self.logFile + ".html", logFileDestination)
+            self.log.debug("Log file has been copied to " + logFileDestination)
+
         except Exception, e:
             self.log.exception(e)
             raise e
