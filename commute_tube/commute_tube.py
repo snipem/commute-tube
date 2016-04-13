@@ -4,6 +4,7 @@ from __future__ import division
 from youtube_dl import YoutubeDL
 from youtube_dl import version as YoutubeDL_version
 import file_utils
+from commute_logger import CommuteTubeLoggingHandler
 
 import os
 import sys
@@ -45,6 +46,9 @@ class CommuteTube():
         consoleHandler = logging.StreamHandler()
         consoleHandler.setFormatter(logFormatter)
         rootLogger.addHandler(consoleHandler)
+
+        commuteHandler = CommuteTubeLoggingHandler(self.logFile+".html")
+        rootLogger.addHandler(commuteHandler)
 
         self.log = logging
         self.ydlLog = logging
