@@ -1,4 +1,5 @@
 import logging, re
+from subprocess import CalledProcessError
 
 try:
     import codecs
@@ -65,26 +66,37 @@ class CommuteTubeLoggingHandler(logging.FileHandler):
 
         prefix = ""
 
-        if ("[download]" in record.msg and not self.downloadInProgress):
+        message = str(record.msg)
+
+        #TODO Download does not match on every system
+        if ("[download]" in message and not self.downloadInProgress):
             prefix = "<div class='downloadprocess'>"
             self.downloadInProgress = True
-        elif (self.downloadInProgress and not "[K[download]" in record.msg):
+        elif (self.downloadInProgress and not "[download]" in message):
             prefix = "</div>"
             self.downloadInProgress = False
 
-        try:
-            formattedMessage = re.sub(r'\b((http|https)://[a-zA-Z0-9./?=_-]*)\b', r'<a href="\1">\1</a>', record.msg)
-        except:
-            formattedMessage = record.msg
+        classes = []
+        classes.append(record.levelname)
+        classes.append(record.module)
 
-        record.msg = "\t\t\t"+prefix+"<div class='"+record.levelname+" "+record.module+"'> \
+        if (isinstance(record.msg, CalledProcessError)):
+            classes.append("exception")
+
+        try:
+            formattedMessage = re.sub(r'\b((http|https)://[a-zA-Z0-9./?=_-]*)\b', r'<a href="\1">\1</a>', message)
+        except:
+            formattedMessage = message
+
+        record.msg = "\t\t\t"+prefix+"<div class='" + " ".join(classes) + "'> \
         <span class='timestamp'>"+record.asctime+"</span> \
         <span class='module'>"+record.module+"</span> \
         <span class='loglevel'>"+record.levelname+"</span> \
         <span class='message'>" + formattedMessage + "</span></div>"
 
+        #TODO Exceptions are printed afterwards to the file with this call
         logging.FileHandler.emit(self, record)
 
     def end():
         #TODO This needs to be called from commute tube at the end
-        self.stream.write("</html>")
+        self.stream.write("\t<body>\n</html>")
