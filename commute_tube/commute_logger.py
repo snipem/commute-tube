@@ -74,9 +74,7 @@ class CommuteTubeLoggingHandler(logging.FileHandler):
 
         try:
             formattedMessage = re.sub(r'\b((http|https)://[a-zA-Z0-9./?=_-]*)\b', r'<a href="\1">\1</a>', record.msg)
-        except Exception as e:
-            pass
-        else:
+        except:
             formattedMessage = record.msg
 
         record.msg = "\t\t\t"+prefix+"<div class='"+record.levelname+" "+record.module+"'> \
