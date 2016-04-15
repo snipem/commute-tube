@@ -47,9 +47,6 @@ class CommuteTube():
         consoleHandler.setFormatter(logFormatter)
         rootLogger.addHandler(consoleHandler)
 
-        commuteHandler = CommuteTubeLoggingHandler(self.logFile+".html")
-        rootLogger.addHandler(commuteHandler)
-
         self.log = logging
         self.ydlLog = logging
 
@@ -298,7 +295,7 @@ class CommuteTube():
             shutil.copyfile(self.logFile, logFileDestination)
             self.log.debug("Log file has been copied to " + logFileDestination)
 
-            # TODO Strip one of these 
+            # TODO Strip one of these
             # Copy html log file to USB pen
             logFileDestination = self.pathToDownloadFolder + "/" + self.logFile + ".html"
             shutil.copyfile(self.logFile + ".html", logFileDestination)
