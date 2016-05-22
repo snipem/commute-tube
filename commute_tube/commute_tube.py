@@ -158,7 +158,7 @@ class CommuteTube():
 
         if 'outtmpl' not in ydl.params:
             ydl.params['outtmpl'] = outtmpl
-        else:
+        elif not (ydl.params['outtmpl'].startswith(self.pathToDownloadFolder)):
             self.log.info("Prefixing custom set outtmpl with '" + self.pathToDownloadFolder + "/" + prefix + "'")
             ydl.params['outtmpl'] = self.pathToDownloadFolder + "/" + prefix + \
             ydl.params['outtmpl']
