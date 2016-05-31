@@ -1,0 +1,39 @@
+{
+  "pen": {
+    "penPath": "/Users/matze/build/pen",
+    "downloadFolder": "Content",
+    "mountAndUnmount": "False",
+    "debug": "False"
+  },
+  "source": [{
+      "url": "https://www.youtube.com/watch?v=C0DPdy98e4c"
+    },
+    {
+  "path": "/Users/matze/Documents/workspace/commute-tube/commute_tube/__main__.py"
+  },
+    {
+  "description": "Spanischer Fussball",
+  "shellscript": "sh ~/Documents/trunk/scripts/fullmatchesandshows.sh http://www.fullmatchesandshows.com/category/spain+highlights/feed/",
+  "matchtitle": "(RMA|BAR|VAL)-?\\w* ?HL ENG(?! EXT)",
+  "format_limit": "10000",
+  "prefix": "FMS_Spanien_",
+  "playlistend": 1
+},
+{
+  "description": "European Football Show",
+  "shellscript": "sh ~/Documents/trunk/scripts/fullmatchesandshows.sh http://www.fullmatchesandshows.com/tag/european-football-show/feed | head -n 3",
+  "format_limit": "10000",
+  "prefix": "FMS_Europa_",
+  "playlistend": 3
+},
+{
+  "description": "Soundtrack Playlist",
+  "url" : "https://www.youtube.com/playlist?list=PLP2k61OzLrrxoXAZzogpxTbzGk-yJO0dt",
+  "format": "bestaudio/best",
+  "outtmpl": "%(title)s.%(ext)s"
+}
+
+]
+
+
+}
