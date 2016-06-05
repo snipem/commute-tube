@@ -23,9 +23,11 @@
          "description" : "Champions League on Sky"
       },
       {
+         "description" : "Europa League on Sky longer than 300 seconds",
          "url" : "https://www.youtube.com/playlist?list=PLykXdRRd47IX_5gUChdhDjgKmQyZtRrC_",
          "playlistend" : 10,
-         "description" : "Europa League on Sky"
+         "description" : "Europa League on Sky",
+         "match_filter" : "duration > 300"
       },
       {
          "description" : "Watch later",

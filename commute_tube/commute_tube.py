@@ -3,7 +3,10 @@
 from __future__ import division
 from youtube_dl import YoutubeDL
 from youtube_dl import version as YoutubeDL_version
+from youtube_dl.utils import match_filter_func
+
 import file_utils
+import copy
 from commute_logger import CommuteTubeLoggingHandler
 
 import os
@@ -139,6 +142,10 @@ class CommuteTube():
         ydl.params = source
         prefix = ""
 
+        ydl.params['match_filter'] = (
+            None if ydl.params['match_filter'] is None
+            else match_filter_func(ydl.params['match_filter']))
+
         if 'format' not in ydl.params and 'format_limit' not in ydl.params:
             ydl.params['format'] = "bestvideo+bestaudio/best"
         if 'nooverwrites' not in ydl.params:
@@ -252,8 +259,9 @@ class CommuteTube():
                     elif "shellscript" in source:
                         urls = self.processShellscript(source)
                         for url in urls:
-                            source['url'] = url
-                            filename = self.processUrl(source)
+                            shellscript_source = copy.copy(source)
+                            shellscript_source['url'] = url
+                            filename = self.processUrl(shellscript_source)
 
                     if (filename is not None):
                         downloadedFiles.append(filename)
