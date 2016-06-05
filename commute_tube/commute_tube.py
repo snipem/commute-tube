@@ -143,7 +143,7 @@ class CommuteTube():
         prefix = ""
 
         ydl.params['match_filter'] = (
-            None if ydl.params['match_filter'] is None
+            None if 'match_filter' not in ydl.params or ydl.params['match_filter'] is None
             else match_filter_func(ydl.params['match_filter']))
 
         if 'format' not in ydl.params and 'format_limit' not in ydl.params:
