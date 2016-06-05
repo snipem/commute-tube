@@ -51,6 +51,22 @@
          "shellscript" : "elinks --dump http://www.arte.tv/guide/de/suchergebnisse?keyword=durch+die+nacht+mit | egrep '/guide/de/[0-9]' | awk {'print $2'} | uniq",
          "prefix" : "Arte_",
          "description" : "Durch die Nacht mit..."
-      }
+      },
+      {
+        "description" : "Conferences and Press Briefings",
+        "url": [
+           "https://www.youtube.com/user/PlayStation",
+           "https://www.youtube.com/user/IGNentertainment",
+           "https://www.youtube.com/user/gamespot",
+           "https://www.youtube.com/user/PlayStation",
+           "https://www.youtube.com/user/TheRealGiantBomb",
+           "https://www.youtube.com/user/xbox",
+           "https://www.youtube.com/user/ubisoft",
+           "https://www.youtube.com/user/BethesdaSoftworks"
+         ],
+        "playlistend": 15,
+        "match_filter": "duration > 3000",
+        "matchtitle": "201|Sony|Microsoft|Conference|Bethesda| EA | E3 |Experience|PlayStation|Xbox|Briefing",
+      },
    ]
 }

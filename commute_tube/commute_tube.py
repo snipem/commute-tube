@@ -252,8 +252,14 @@ class CommuteTube():
 
                 try:
 
-                    if "url" in source:
+                    if "url" in source and not isinstance(source['url'], list):
                         filename = self.processUrl(source)
+                    elif "url" in source and isinstance(source['url'], list):
+                        self.log.info("Downloading multiple urls")
+                        for url in source['url']:
+                            urls_source = copy.copy(source)
+                            urls_source['url'] = url
+                            filename = self.processUrl(urls_source)
                     elif "path" in source:
                         filename = self.processPath(source)
                     elif "shellscript" in source:
