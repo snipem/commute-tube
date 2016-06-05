@@ -216,9 +216,34 @@ class CommuteTube():
                 " was already in place with same 100 byte digest")
 
 
+    def processSource(self, source):
+        """Main method for processing sources
+
+        This method determines the nature of the source and invokes
+        source specific behaviour.
+        """
+        #TODO Use get() instead of direct access of fields
+        if "url" in source and not isinstance(source['url'], list):
+            filename = self.processUrl(source)
+        elif "url" in source and isinstance(source['url'], list):
+            self.log.info("Downloading multiple urls")
+            for url in source['url']:
+                urls_source = copy.copy(source)
+                urls_source['url'] = url
+                filename = self.processUrl(urls_source)
+        elif "path" in source:
+            filename = self.processPath(source)
+        elif "shellscript" in source:
+            urls = self.processShellscript(source)
+            for url in urls:
+                shellscript_source = copy.copy(source)
+                shellscript_source['url'] = url
+                filename = self.processUrl(shellscript_source)
+
+        return filename
 
     def run(self):
-        """Main method for processing sources
+        """Main method for running commute-tube
 
         This method mounts the USB pen, calculates the disk space left before and after,
         runs all sources, one at a time, evaluates a file delta and writes playlists
@@ -249,28 +274,14 @@ class CommuteTube():
                 YoutubeDL_version.__version__)
 
             for source in self.config['source']:
-
                 try:
+                    if source.get('deactivated'):
+                        self.log.info("Source %s is deactivated", source.get('description'))
+                    else:
+                        filename = self.processSource(source)
 
-                    if "url" in source and not isinstance(source['url'], list):
-                        filename = self.processUrl(source)
-                    elif "url" in source and isinstance(source['url'], list):
-                        self.log.info("Downloading multiple urls")
-                        for url in source['url']:
-                            urls_source = copy.copy(source)
-                            urls_source['url'] = url
-                            filename = self.processUrl(urls_source)
-                    elif "path" in source:
-                        filename = self.processPath(source)
-                    elif "shellscript" in source:
-                        urls = self.processShellscript(source)
-                        for url in urls:
-                            shellscript_source = copy.copy(source)
-                            shellscript_source['url'] = url
-                            filename = self.processUrl(shellscript_source)
-
-                    if (filename is not None):
-                        downloadedFiles.append(filename)
+                        if (filename is not None):
+                            downloadedFiles.append(filename)
 
                 except Exception, e:
                     self.log.error(

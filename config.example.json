@@ -18,6 +18,7 @@
          "playlistend" : 3
       },
       {
+         "deactivated" : true,
          "url" : "https://www.youtube.com/playlist?list=PLykXdRRd47IXBd5C-CY0UwR6SE61OPjR0",
          "playlistend" : 10,
          "description" : "Champions League on Sky"
