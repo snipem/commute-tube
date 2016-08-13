@@ -29,7 +29,6 @@ class CommuteTube():
     pathToDownloadFolder = ""
     logFile = "commute-tube.log"
     mountAndUnmount = True
-    delete = False
 
     def getConfig(self):
         """Load config from config path"""
@@ -62,12 +61,6 @@ class CommuteTube():
             self.mountAndUnmount = False
         if self.config['pen']['debug'] == "True":
             self.debug = True
-
-        if 'delete' in self.config['pen']:
-            self.delete = True
-            self.deleteStrategy = self.config['pen']['delete']['strategy']
-            self.deleteFreeSpace = self.config['pen']['delete']['freeSpace']
-            self.deleteExclude = self.config['pen']['delete']['exclude']
 
         self.pathToDownloadFolder = self.penPath + "/" + self.downloadFolder
 
@@ -257,12 +250,6 @@ class CommuteTube():
 
             file_utils.createDownloadFolder(self.pathToDownloadFolder)
 
-            if self.delete == True:
-                self.log.info("Freeing space")
-                if (self.deleteStrategy == "DeleteFolder"):
-                    self.log.debug("Using DeleteFolder strategy for deletion")
-                    self.freeSpaceByMovingToDeleteFolder(self.pathToDownloadFolder, self.deleteFreeSpace, self.deleteExclude)
-
             diskSizeBefore = file_utils.getRemainingDiskSizeHumanFriendly(self.pathToDownloadFolder)
             filesBefore = os.listdir(self.pathToDownloadFolder)
 
@@ -348,15 +335,6 @@ class CommuteTube():
         else:
             self.log.info("USB Pen is already mounted under " + self.penPath)
             sys.exit(0)
-
-
-    def freeSpaceByMovingToDeleteFolder(self, pathToDownloadFolder, spaceToFree, exclude):
-        self.log.info("Delete 'delete' folder")
-        file_utils.deleteFilesInDeleteFolder(pathToDownloadFolder)
-
-        self.log.info("Moving files to 'delete' folder")
-        filesToBeMoved = file_utils.getFilenamesForDeletion(pathToDownloadFolder, spaceToFree, exclude)
-        file_utils.moveFilesToDeleteFolder(pathToDownloadFolder, filesToBeMoved)
 
     def main(self):
         self.run()
