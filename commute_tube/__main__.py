@@ -4,13 +4,14 @@ import argparse
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
 
-    ct = CommuteTube()
-
-    parser.add_argument('-c', action='store_true',
+    parser.add_argument('--check', '-c', action='store_true',
                         help='Check if USB pen is present')
+    parser.add_argument('--config', default='config.json', help="Path to config file")
     args = parser.parse_args()
+    
+    ct = CommuteTube(args.config)
 
-    if (args.c == True):
+    if (args.check):
         ct.checkForPen()
     else:
         ct.main()

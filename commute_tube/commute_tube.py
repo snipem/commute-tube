@@ -17,9 +17,9 @@ import shutil
 import ntpath
 import subprocess
 
-
 class CommuteTube():
 
+    configPath = None
     debug = None
     log = None
     ydlLog = None
@@ -32,11 +32,12 @@ class CommuteTube():
     delete = False
 
     def getConfig(self):
-        """Load config from config.json"""
-        json_data = open('config.json')
+        """Load config from config path"""
+        json_data = open(self.configPath)
         return json.load(json_data)
 
-    def __init__(self):
+    def __init__(self, configPath):
+        self.configPath = configPath
         logFormatter = logging.Formatter(
             "%(asctime)s [%(levelname)-5.5s] [%(module)-12.12s]  %(message)s")
         rootLogger = logging.getLogger()
@@ -359,3 +360,4 @@ class CommuteTube():
 
     def main(self):
         self.run()
+
