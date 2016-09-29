@@ -216,6 +216,9 @@ class CommuteTube():
         This method determines the nature of the source and invokes
         source specific behaviour.
         """
+
+        filename = None
+
         #TODO Use get() instead of direct access of fields
         if "url" in source and not isinstance(source['url'], list):
             filename = self.processUrl(source)
