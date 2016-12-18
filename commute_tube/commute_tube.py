@@ -140,7 +140,7 @@ class CommuteTube():
             else match_filter_func(ydl.params['match_filter']))
 
         if 'format' not in ydl.params and 'format_limit' not in ydl.params:
-            ydl.params['format'] = "bestvideo+bestaudio/best"
+            ydl.params['format'] = "bestvideo+bestaudio/best" if 'format' not in self.config else self.config["format"]
         if 'nooverwrites' not in ydl.params:
             ydl.params['nooverwrites'] = True
         if 'ignoreerrors' not in ydl.params:
