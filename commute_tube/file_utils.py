@@ -19,7 +19,7 @@ rootLogger.addHandler(fileHandler)
 
 log = logging
 
-def mountUSB(path):
+def mount_usb(path):
     """Mounts device on given path using mount command
 
     This method will only work on Unix machines
@@ -31,7 +31,7 @@ def mountUSB(path):
         return False
     return True
 
-def unmountUSB(path):
+def unmount_usb(path):
     """Unmounts device on given path using umount command
 
     This method will only work on Unix machines
@@ -43,19 +43,19 @@ def unmountUSB(path):
         return False
     return True
 
-def createDownloadFolder(pathToDownloadFolder):
+def create_download_folder(pathToDownloadFolder):
     """Creates download folder on configured download folder location"""
     if os.path.exists(pathToDownloadFolder) == False:
         os.mkdir(pathToDownloadFolder)
 
-def getRemainingDiskSizeHumanFriendly(pathToDownloadFolder):
+def get_remaining_disk_size_human_friendly(pathToDownloadFolder):
     """Calculates disk size humanfriendly form
 
     This method is built to work on both OS X and Linux
     """
-    return humanfriendly.format_size(getRemainingDiskSizeInByte(pathToDownloadFolder))
+    return humanfriendly.format_size(get_remaining_disk_size_in_byte(pathToDownloadFolder))
 
-def getRemainingDiskSizeInByte(pathToDownloadFolder):
+def get_remaining_disk_size_in_byte(pathToDownloadFolder):
     """Calculates disk size in bytes
 
     This method is built to work on both OS X and Linux
@@ -63,7 +63,7 @@ def getRemainingDiskSizeInByte(pathToDownloadFolder):
     st = os.statvfs(pathToDownloadFolder)
     return st.f_bavail * st.f_frsize
 
-def filesAreDifferent(src, dest):
+def files_are_different(src, dest):
     """Compares the first 100 bytes of two files and returns True if different,
     and False if not
 
@@ -91,7 +91,7 @@ def filesAreDifferent(src, dest):
     else:
         return True
 
-def writePlaylist(pathToDownloadFolder, files, name):
+def write_playlist(pathToDownloadFolder, files, name):
     """Writes a playlist consisting of all files given as parameter"""
     f = open(pathToDownloadFolder + '/' + name + '.m3u', 'w')
     f.write("\n".join(files).encode('UTF-8'))

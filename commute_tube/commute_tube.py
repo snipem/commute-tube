@@ -7,7 +7,6 @@ from youtube_dl.utils import match_filter_func
 
 import file_utils
 import copy
-from commute_logger import CommuteTubeLoggingHandler
 
 import os
 import sys
@@ -30,7 +29,7 @@ class CommuteTube():
     logFile = "commute-tube.log"
     mountAndUnmount = True
 
-    def getConfig(self):
+    def get_config(self):
         """Load config from config path"""
         json_data = open(self.configPath)
         return json.load(json_data)
@@ -53,7 +52,7 @@ class CommuteTube():
         self.log = logging
         self.ydlLog = logging
 
-        self.config = self.getConfig()
+        self.config = self.get_config()
         self.penPath = self.config['pen']['penPath']
         self.downloadFolder = self.config['pen']['downloadFolder']
 
@@ -73,7 +72,7 @@ class CommuteTube():
                 "There is no USB pen mounted under "
                 + self.penPath + ". Trying to mount it.")
 
-            if file_utils.mountUSB(self.penPath) == False:
+            if file_utils.mount_usb(self.penPath) == False:
                 self.log.info("Could not mount USB pen under " + self.penPath)
                 return False
             else:
@@ -88,7 +87,7 @@ class CommuteTube():
         """Unmounts USB device on given path delivers True if successfull and False
         if not
         """
-        if file_utils.unmountUSB(self.penPath) == True:
+        if file_utils.unmount_usb(self.penPath) == True:
             self.log.info(
                 "USB Pen under " + self.penPath + " has been unmounted")
             return True
@@ -98,7 +97,7 @@ class CommuteTube():
                 + " has not been successfully unmounted")
             return False
 
-    def processShellscript(self, source):
+    def process_shellscript(self, source):
         """Runs a shellscript and returns it's output line by line as a list"""
         shellscript = source['shellscript']
 
@@ -114,7 +113,7 @@ class CommuteTube():
 
         return urls
 
-    def processUrl(self, source):
+    def process_url(self, source):
         """Main method for processing urls
 
         This method basically hands over the configuration to YoutubeDL and repeats
@@ -171,7 +170,7 @@ class CommuteTube():
 
         ydl.download([source['url']])
 
-    def processPath(self, source):
+    def process_path(self, source):
         """Main method for processing paths
 
         When a path is processed the source file is compared with the possibly
@@ -197,7 +196,7 @@ class CommuteTube():
             self.log.debug(
                 "+ File " + filename + " did not exist, has been copied")
             return filename
-        elif file_utils.filesAreDifferent(src, dest):
+        elif file_utils.files_are_different(src, dest):
             shutil.copy2(src, dest)
             self.log.debug(
                 "+ File " + filename +
@@ -210,7 +209,7 @@ class CommuteTube():
                 " was already in place with same 100 byte digest")
 
 
-    def processSource(self, source):
+    def process_source(self, source):
         """Main method for processing sources
 
         This method determines the nature of the source and invokes
@@ -221,21 +220,21 @@ class CommuteTube():
 
         #TODO Use get() instead of direct access of fields
         if "url" in source and not isinstance(source['url'], list):
-            filenames.append(self.processUrl(source))
+            filenames.append(self.process_url(source))
         elif "url" in source and isinstance(source['url'], list):
             self.log.info("Downloading multiple urls")
             for url in source['url']:
                 urls_source = copy.copy(source)
                 urls_source['url'] = url
-                filenames.append(self.processUrl(urls_source))
+                filenames.append(self.process_url(urls_source))
         elif "path" in source:
-            filenames.append(self.processPath(source))
+            filenames.append(self.process_path(source))
         elif "shellscript" in source:
-            urls = self.processShellscript(source)
+            urls = self.process_shellscript(source)
             for url in urls:
                 shellscript_source = copy.copy(source)
                 shellscript_source['url'] = url
-                filenames.append(self.processUrl(shellscript_source))
+                filenames.append(self.process_url(shellscript_source))
 
         return filenames
 
@@ -251,9 +250,9 @@ class CommuteTube():
             if self.mountAndUnmount is True and self.mount() is False:
                 sys.exit(1)
 
-            file_utils.createDownloadFolder(self.pathToDownloadFolder)
+            file_utils.create_download_folder(self.pathToDownloadFolder)
 
-            diskSizeBefore = file_utils.getRemainingDiskSizeHumanFriendly(self.pathToDownloadFolder)
+            diskSizeBefore = file_utils.get_remaining_disk_size_human_friendly(self.pathToDownloadFolder)
             filesBefore = os.listdir(self.pathToDownloadFolder)
 
             self.log.info("Remaining disk size: " + diskSizeBefore)
@@ -270,7 +269,7 @@ class CommuteTube():
                     if source.get('deactivated'):
                         self.log.info("Source %s is deactivated", source.get('description'))
                     else:
-                        filenames = self.processSource(source)
+                        filenames = self.process_source(source)
 
                         if (filenames is not None):
                             downloadedFiles + downloadedFiles + filenames
@@ -291,7 +290,7 @@ class CommuteTube():
             for downloadedFile in downloadedFiles:
                 self.log.info("Downloaded: " + downloadedFile)
 
-            diskSizeAfter = file_utils.getRemainingDiskSizeHumanFriendly(self.pathToDownloadFolder)
+            diskSizeAfter = file_utils.get_remaining_disk_size_human_friendly(self.pathToDownloadFolder)
             self.log.info("Remaining disk size: " + diskSizeAfter)
 
             allFiles = sorted(os.listdir(self.pathToDownloadFolder))
@@ -299,12 +298,12 @@ class CommuteTube():
             # TODO Add configuration option here
             if (True):
                 self.log.debug("Writing playlist for all files")
-                file_utils.writePlaylist(self.pathToDownloadFolder, allFiles, "all")
+                file_utils.write_playlist(self.pathToDownloadFolder, allFiles, "all")
 
             # TODO Add configuration option here
             if (True):
                 self.log.debug("Writing playlist for new files")
-                file_utils.writePlaylist(self.pathToDownloadFolder, downloadedFiles, "new")
+                file_utils.write_playlist(self.pathToDownloadFolder, downloadedFiles, "new")
 
             # Copy log file to USB pen
             logFileDestination = self.pathToDownloadFolder + "/" + self.logFile
@@ -318,17 +317,17 @@ class CommuteTube():
             if self.mountAndUnmount is True:
                 self.unmount()
 
-    def checkForPen(self):
+    def check_for_pen(self):
         """This method checks if a pen is present or not. Exits with exit code 1
         if not. Else exit code 0."""
         if os.path.ismount(self.penPath) == False:
             self.log.info("USB Pen is not mounted under " + self.penPath)
-            if file_utils.mountUSB(self.penPath) == True:
+            if file_utils.mount_usb(self.penPath) == True:
                 self.log.info("USB Pen has been successfully mounted")
             else:
                 sys.exit(1)
 
-            if file_utils.unmountUSB(self.penPath) == True:
+            if file_utils.unmount_usb(self.penPath) == True:
                 self.log.info("USB Pen has been successfully unmounted")
             else:
                 sys.exit(1)
