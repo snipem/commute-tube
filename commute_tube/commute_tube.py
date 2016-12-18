@@ -217,27 +217,27 @@ class CommuteTube():
         source specific behaviour.
         """
 
-        filename = None
+        filenames = []
 
         #TODO Use get() instead of direct access of fields
         if "url" in source and not isinstance(source['url'], list):
-            filename = self.processUrl(source)
+            filenames.append(self.processUrl(source))
         elif "url" in source and isinstance(source['url'], list):
             self.log.info("Downloading multiple urls")
             for url in source['url']:
                 urls_source = copy.copy(source)
                 urls_source['url'] = url
-                filename = self.processUrl(urls_source)
+                filenames.append(self.processUrl(urls_source))
         elif "path" in source:
-            filename = self.processPath(source)
+            filenames.append(self.processPath(source))
         elif "shellscript" in source:
             urls = self.processShellscript(source)
             for url in urls:
                 shellscript_source = copy.copy(source)
                 shellscript_source['url'] = url
-                filename = self.processUrl(shellscript_source)
+                filenames.append(self.processUrl(shellscript_source))
 
-        return filename
+        return filenames
 
     def run(self):
         """Main method for running commute-tube
@@ -259,6 +259,7 @@ class CommuteTube():
             self.log.info("Remaining disk size: " + diskSizeBefore)
 
             downloadedFiles = []
+            from pprint import pprint
 
             self.log.debug(
                 "Running with YoutubeDL version as of " +
@@ -269,10 +270,10 @@ class CommuteTube():
                     if source.get('deactivated'):
                         self.log.info("Source %s is deactivated", source.get('description'))
                     else:
-                        filename = self.processSource(source)
+                        filenames = self.processSource(source)
 
-                        if (filename is not None):
-                            downloadedFiles.append(filename)
+                        if (filenames is not None):
+                            downloadedFiles + downloadedFiles + filenames
 
                 except Exception, e:
                     self.log.error(
@@ -283,8 +284,7 @@ class CommuteTube():
             filesAfter = os.listdir(self.pathToDownloadFolder)
 
             filesDelta = sorted(list(set(filesAfter) - set(filesBefore)))
-            for fileDelta in filesDelta:
-                downloadedFiles.append(fileDelta)
+            downloadedFiles = downloadedFiles + filesDelta
 
             downloadedFiles = sorted(downloadedFiles)
 
