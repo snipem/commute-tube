@@ -19,7 +19,7 @@ rootLogger.addHandler(fileHandler)
 
 log = logging
 
-def mountUSB(path):
+def mount_usb(path):
     """Mounts device on given path using mount command
 
     This method will only work on Unix machines
@@ -31,7 +31,7 @@ def mountUSB(path):
         return False
     return True
 
-def unmountUSB(path):
+def unmount_usb(path):
     """Unmounts device on given path using umount command
 
     This method will only work on Unix machines
@@ -43,19 +43,19 @@ def unmountUSB(path):
         return False
     return True
 
-def createDownloadFolder(pathToDownloadFolder):
+def create_download_folder(pathToDownloadFolder):
     """Creates download folder on configured download folder location"""
     if os.path.exists(pathToDownloadFolder) == False:
         os.mkdir(pathToDownloadFolder)
 
-def getRemainingDiskSizeHumanFriendly(pathToDownloadFolder):
+def get_remaining_disk_size_human_friendly(pathToDownloadFolder):
     """Calculates disk size humanfriendly form
 
     This method is built to work on both OS X and Linux
     """
-    return humanfriendly.format_size(getRemainingDiskSizeInByte(pathToDownloadFolder))
+    return humanfriendly.format_size(get_remaining_disk_size_in_byte(pathToDownloadFolder))
 
-def getRemainingDiskSizeInByte(pathToDownloadFolder):
+def get_remaining_disk_size_in_byte(pathToDownloadFolder):
     """Calculates disk size in bytes
 
     This method is built to work on both OS X and Linux
@@ -63,7 +63,7 @@ def getRemainingDiskSizeInByte(pathToDownloadFolder):
     st = os.statvfs(pathToDownloadFolder)
     return st.f_bavail * st.f_frsize
 
-def filesAreDifferent(src, dest):
+def files_are_different(src, dest):
     """Compares the first 100 bytes of two files and returns True if different,
     and False if not
 
@@ -91,60 +91,8 @@ def filesAreDifferent(src, dest):
     else:
         return True
 
-def writePlaylist(pathToDownloadFolder, files, name):
+def write_playlist(pathToDownloadFolder, files, name):
     """Writes a playlist consisting of all files given as parameter"""
     f = open(pathToDownloadFolder + '/' + name + '.m3u', 'w')
     f.write("\n".join(files).encode('UTF-8'))
 
-def getFilenamesForDeletion(pathToDownloadFolder, spaceToFree, exclude):
-    """Frees space in download folder until free space is reached. Files
-    can be excluded to be not put into consideration for deletion"""
-    filesToBeDeleted = []
-    bytesToFree = humanfriendly.parse_size(spaceToFree)
-
-    exclude.append("delete")
-
-    log.debug("Freeing space in " + pathToDownloadFolder + " if " + str(getRemainingDiskSizeInByte(pathToDownloadFolder)) + " < " + str(bytesToFree))
-    if (getRemainingDiskSizeInByte(pathToDownloadFolder) < bytesToFree):
-
-        filesInFolder = [os.path.join(pathToDownloadFolder, f) for f in os.listdir(pathToDownloadFolder)]
-        files = sorted(filesInFolder, key=os.path.getctime)
-        oldFilesInSize = 0
-
-        for file in files:
-            head, filename = os.path.split(file)
-            size = os.path.getsize(file)
-
-            log.debug("Looking for " +filename + " in ", exclude)
-
-            if (filename not in exclude):
-                bytesToBeFreed = oldFilesInSize + size
-                filesToBeDeleted.append(file)
-                log.debug("Appended " + file)
-
-                if (bytesToBeFreed >= bytesToFree):
-                    log.debug(humanfriendly.format_size(bytesToBeFreed) + " where found and are to be moved")
-                    break
-                else:
-                    log.debug(humanfriendly.format_size(bytesToBeFreed) + "/" + humanfriendly.format_size(bytesToFree) + " found for deletion")
-
-    return filesToBeDeleted
-
-def deleteFilesInDeleteFolder(pathToDownloadFolder):
-    """Deletes all files in the subfolder 'delete'"""
-
-    if (not os.path.isdir(pathToDownloadFolder+"/delete")):
-        os.mkdir(pathToDownloadFolder+"/delete")
-
-    files = sorted(os.listdir(pathToDownloadFolder + "/delete/"))
-    for file in files:
-        os.remove(pathToDownloadFolder + "/delete/" + file)
-        log.debug("Deleted " + file)
-
-def moveFilesToDeleteFolder(pathToDownloadFolder, filesToBeMoved):
-    """Moves all files to 'delete' folder"""
-
-    for file in filesToBeMoved:
-        head, filename = os.path.split(file)
-        shutil.move(file, pathToDownloadFolder + "/delete/" + filename)
-        log.debug("Moved " + file + " to delete folder")
