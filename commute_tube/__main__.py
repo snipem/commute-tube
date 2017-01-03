@@ -12,6 +12,6 @@ if __name__ == '__main__':
     ct = CommuteTube(args.config)
 
     if (args.check):
-        ct.checkForPen()
+        ct.check_for_pen()
     else:
         ct.main()
