@@ -1,9 +1,12 @@
 {
     "pen" : {
-        "penPath" : "/mnt/commuteUSB",
-            "debug" : "False",
-            "mountAndUnmount" : "True",
-            "downloadFolder" : "Download"
+        "penPath" : "/tmp/commuteUSB",
+        "debug" : "False",
+        "mountAndUnmount" : "True",
+        "downloadFolder" : "Download",
+        "common" : {
+            "writesubtitles" : true
+            }
     },
         "format" : "bestvideo[height<=1080]+bestaudio/best[height<=1080]",
         "source" : [
