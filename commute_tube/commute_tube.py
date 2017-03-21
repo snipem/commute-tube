@@ -113,12 +113,13 @@ class CommuteTube():
 
         return urls
 
-    def process_url(self, source):
+    def process_url(self, source, global_opts):
         """Main method for processing urls
 
         This method basically hands over the configuration to YoutubeDL and repeats
         the step until every source in the configuration was read
         """
+
         ydl = YoutubeDL()
         ydl.add_default_info_extractors()
 
@@ -132,7 +133,10 @@ class CommuteTube():
             "Processing source: '" + sourceDescription
             + "' Url: '" + sourceUrl + "'")
 
-        ydl.params = source
+        # Merge local parameters with global ones
+        ydl.params = copy.copy(global_opts)
+        ydl.params.update(source)
+
         prefix = ""
 
         ydl.params['match_filter'] = (
@@ -209,7 +213,7 @@ class CommuteTube():
                 " was already in place with same 100 byte digest")
 
 
-    def process_source(self, source):
+    def process_source(self, source, global_opts):
         """Main method for processing sources
 
         This method determines the nature of the source and invokes
@@ -220,13 +224,13 @@ class CommuteTube():
 
         #TODO Use get() instead of direct access of fields
         if "url" in source and not isinstance(source['url'], list):
-            filenames.append(self.process_url(source))
+            filenames.append(self.process_url(source,global_opts))
         elif "url" in source and isinstance(source['url'], list):
             self.log.info("Downloading multiple urls")
             for url in source['url']:
                 urls_source = copy.copy(source)
                 urls_source['url'] = url
-                filenames.append(self.process_url(urls_source))
+                filenames.append(self.process_url(urls_source,global_opts))
         elif "path" in source:
             filenames.append(self.process_path(source))
         elif "shellscript" in source:
@@ -234,7 +238,7 @@ class CommuteTube():
             for url in urls:
                 shellscript_source = copy.copy(source)
                 shellscript_source['url'] = url
-                filenames.append(self.process_url(shellscript_source))
+                filenames.append(self.process_url(shellscript_source,global_opts))
 
         return filenames
 
@@ -264,12 +268,17 @@ class CommuteTube():
                 "Running with YoutubeDL version as of " +
                 YoutubeDL_version.__version__)
 
+            if "common" in self.config["pen"]:
+                global_opts = self.config["pen"]["common"]
+            else:
+                global_opts = {}
+
             for source in self.config['source']:
                 try:
                     if source.get('deactivated'):
                         self.log.info("Source %s is deactivated", source.get('description'))
                     else:
-                        filenames = self.process_source(source)
+                        filenames = self.process_source(source,global_opts)
 
                         if (filenames is not None):
                             downloadedFiles + downloadedFiles + filenames
