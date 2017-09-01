@@ -16,6 +16,7 @@ import shutil
 import ntpath
 import subprocess
 
+
 class CommuteTube():
 
     configPath = None
@@ -67,12 +68,12 @@ class CommuteTube():
         """Mounts USB device on given path delivers True if successfull and False
         if not
         """
-        if os.path.ismount(self.penPath) == False:
+        if os.path.ismount(self.penPath) is False:
             self.log.info(
                 "There is no USB pen mounted under "
                 + self.penPath + ". Trying to mount it.")
 
-            if file_utils.mount_usb(self.penPath) == False:
+            if file_utils.mount_usb(self.penPath) is False:
                 self.log.info("Could not mount USB pen under " + self.penPath)
                 return False
             else:
@@ -87,7 +88,7 @@ class CommuteTube():
         """Unmounts USB device on given path delivers True if successfull and False
         if not
         """
-        if file_utils.unmount_usb(self.penPath) == True:
+        if file_utils.unmount_usb(self.penPath) is True:
             self.log.info(
                 "USB Pen under " + self.penPath + " has been unmounted")
             return True
@@ -116,8 +117,9 @@ class CommuteTube():
     def process_url(self, source, global_opts):
         """Main method for processing urls
 
-        This method basically hands over the configuration to YoutubeDL and repeats
-        the step until every source in the configuration was read
+        This method basically hands over the configuration to YoutubeDL
+        and repeats the step until every source in the configuration
+        was read
         """
 
         ydl = YoutubeDL()
@@ -140,7 +142,8 @@ class CommuteTube():
         prefix = ""
 
         ydl.params['match_filter'] = (
-            None if 'match_filter' not in ydl.params or ydl.params['match_filter'] is None
+            None if 'match_filter' not in ydl.params
+            or ydl.params['match_filter'] is None
             else match_filter_func(ydl.params['match_filter']))
 
         if 'format' not in ydl.params and 'format_limit' not in ydl.params:
@@ -164,8 +167,7 @@ class CommuteTube():
             ydl.params['outtmpl'] = outtmpl
         elif not (ydl.params['outtmpl'].startswith(self.pathToDownloadFolder)):
             self.log.info("Prefixing custom set outtmpl with '" + self.pathToDownloadFolder + "/" + prefix + "'")
-            ydl.params['outtmpl'] = self.pathToDownloadFolder + "/" + prefix + \
-            ydl.params['outtmpl']
+            ydl.params['outtmpl'] = self.pathToDownloadFolder + "/" + prefix + ydl.params['outtmpl']
 
         if self.debug is True:
             self.log.debug(
@@ -212,7 +214,6 @@ class CommuteTube():
                 " has not been copied," +
                 " was already in place with same 100 byte digest")
 
-
     def process_source(self, source, global_opts):
         """Main method for processing sources
 
@@ -222,15 +223,15 @@ class CommuteTube():
 
         filenames = []
 
-        #TODO Use get() instead of direct access of fields
+        # TODO Use get() instead of direct access of fields
         if "url" in source and not isinstance(source['url'], list):
-            filenames.append(self.process_url(source,global_opts))
+            filenames.append(self.process_url(source, global_opts))
         elif "url" in source and isinstance(source['url'], list):
             self.log.info("Downloading multiple urls")
             for url in source['url']:
                 urls_source = copy.copy(source)
                 urls_source['url'] = url
-                filenames.append(self.process_url(urls_source,global_opts))
+                filenames.append(self.process_url(urls_source, global_opts))
         elif "path" in source:
             filenames.append(self.process_path(source))
         elif "shellscript" in source:
@@ -238,7 +239,7 @@ class CommuteTube():
             for url in urls:
                 shellscript_source = copy.copy(source)
                 shellscript_source['url'] = url
-                filenames.append(self.process_url(shellscript_source,global_opts))
+                filenames.append(self.process_url(shellscript_source, global_opts))
 
         return filenames
 
@@ -262,7 +263,6 @@ class CommuteTube():
             self.log.info("Remaining disk size: " + diskSizeBefore)
 
             downloadedFiles = []
-            from pprint import pprint
 
             self.log.debug(
                 "Running with YoutubeDL version as of " +
@@ -278,7 +278,7 @@ class CommuteTube():
                     if source.get('deactivated'):
                         self.log.info("Source %s is deactivated", source.get('description'))
                     else:
-                        filenames = self.process_source(source,global_opts)
+                        filenames = self.process_source(source, global_opts)
 
                         if (filenames is not None):
                             downloadedFiles + downloadedFiles + filenames
@@ -329,14 +329,14 @@ class CommuteTube():
     def check_for_pen(self):
         """This method checks if a pen is present or not. Exits with exit code 1
         if not. Else exit code 0."""
-        if os.path.ismount(self.penPath) == False:
+        if os.path.ismount(self.penPath) is False:
             self.log.info("USB Pen is not mounted under " + self.penPath)
-            if file_utils.mount_usb(self.penPath) == True:
+            if file_utils.mount_usb(self.penPath) is True:
                 self.log.info("USB Pen has been successfully mounted")
             else:
                 sys.exit(1)
 
-            if file_utils.unmount_usb(self.penPath) == True:
+            if file_utils.unmount_usb(self.penPath) is True:
                 self.log.info("USB Pen has been successfully unmounted")
             else:
                 sys.exit(1)
@@ -349,4 +349,3 @@ class CommuteTube():
 
     def main(self):
         self.run()
-
