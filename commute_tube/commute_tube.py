@@ -5,7 +5,7 @@ from youtube_dl import YoutubeDL
 from youtube_dl import version as YoutubeDL_version
 from youtube_dl.utils import match_filter_func
 
-import file_utils
+from commute_tube import file_utils
 import copy
 
 import os
@@ -283,7 +283,7 @@ class CommuteTube():
                         if (filenames is not None):
                             downloadedFiles + downloadedFiles + filenames
 
-                except Exception, e:
+                except (Exception) as e:
                     self.log.error(
                         "Error while processing source. Message: '" +
                         e.message + "'")
@@ -319,7 +319,7 @@ class CommuteTube():
             shutil.copyfile(self.logFile, logFileDestination)
             self.log.debug("Log file has been copied to " + logFileDestination)
 
-        except Exception, e:
+        except (Exception) as e:
             self.log.exception(e)
             raise e
         finally:
