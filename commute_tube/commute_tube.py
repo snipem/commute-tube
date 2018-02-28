@@ -158,7 +158,7 @@ class CommuteTube():
         ydl.params['logger'] = self.ydlLog
 
         outtmpl = self.pathToDownloadFolder + "/" + prefix + \
-            u'%(uploader)s-%(title)s-%(id)s.%(ext)s'
+            u'%(uploader)s-%(title)s.%(ext)s'
 
         if 'outtmpl' not in ydl.params:
             ydl.params['outtmpl'] = outtmpl
