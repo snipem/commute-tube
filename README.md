@@ -1,5 +1,8 @@
 commute-tube
 ============
+
+### This is the last version of Python2
+
 commute-tube is your friend on your daily commute. It will download videos of your interest to your USB pen by night so that you're able to watch the program in bus or train. It is basically a configurable front end for "youtube-dl".
 
 commute-tube is a tool written in Python and should be run in a headless environment such as a server with a USB pen attached. It will look for your USB pen, automatically mount it, download your configured content and unmount the pen afterwards. Only thing that should be done regularly is to plug in your pen after work and catch it before you begin your commute.
