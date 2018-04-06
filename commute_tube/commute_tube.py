@@ -16,10 +16,6 @@ import shutil
 import ntpath
 import subprocess
 
-class CommuteTubeLoggingAdapter(logging.LoggerAdapter):
-    def process(self, msg, kwargs):
-        return '[%s] %s' % (self.extra['description'], msg), kwargs
-
 class CommuteTube():
 
     configPath = None
@@ -139,11 +135,9 @@ class CommuteTube():
         if 'description' in source:
             sourceDescription = source['description']
 
-        adapter = CommuteTubeLoggingAdapter(self.log, {'description': sourceDescription})
-
-        adapter.info(
+        self._logsource(
             "Processing source: '" + sourceDescription
-            + "' Url: '" + sourceUrl + "'")
+            + "' Url: '" + sourceUrl + "'", source)
 
         # Merge local parameters with global ones
         ydl.params = copy.copy(global_opts)
@@ -175,13 +169,13 @@ class CommuteTube():
         if 'outtmpl' not in ydl.params:
             ydl.params['outtmpl'] = outtmpl
         elif not (ydl.params['outtmpl'].startswith(self.pathToDownloadFolder)):
-            adapter.info("Prefixing custom set outtmpl with '" + self.pathToDownloadFolder + "/" + prefix + "'")
+            self._logsource("Prefixing custom set outtmpl with '" + self.pathToDownloadFolder + "/" + prefix + "'", source)
             ydl.params['outtmpl'] = self.pathToDownloadFolder + "/" + prefix + \
             ydl.params['outtmpl']
 
-        if self.debug is True:
-            adapter.debug(
-                "All downloads will be simulated since this is debug mode")
+        if self.debug:
+            self._logsource(
+                "All downloads will be simulated since this is debug mode", source)
             ydl.params['simulate'] = True
 
         ydl.download([source['url']])
@@ -362,6 +356,14 @@ class CommuteTube():
         else:
             self.log.info("USB Pen is already mounted under " + self.penPath)
             sys.exit(0)
+
+    def _logsource(self, message, source=None):
+        if "description" in source:
+            log_description = source["description"] 
+        else:
+            log_description = ""
+
+        self.log.info("[%s] %s" % (log_description, message))
 
     def main(self):
         self.run()
