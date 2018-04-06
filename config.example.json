@@ -1,8 +1,7 @@
 {
     "pen" : {
         "penPath" : "/tmp/commuteUSB",
-        "debug" : "False",
-        "mountAndUnmount" : "True",
+        "mountAndUnmount" : "False",
         "downloadFolder" : "Download",
         "common" : {
             "writesubtitles" : true

@@ -41,6 +41,7 @@ class CommuteTube():
     def __init__(self, args):
         self.configPath = args.config
         self.source_filter = args.filter
+        self.debug = args.debug
 
         logFormatter = logging.Formatter(
             "%(asctime)s [%(levelname)-5.5s] [%(module)-12.12s] %(message)s")
@@ -66,8 +67,6 @@ class CommuteTube():
 
         if self.config['pen']['mountAndUnmount'] == "False":
             self.mountAndUnmount = False
-        if self.config['pen']['debug'] == "True":
-            self.debug = True
 
         self.pathToDownloadFolder = self.penPath + "/" + self.downloadFolder
 

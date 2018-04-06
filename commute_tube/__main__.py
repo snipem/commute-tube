@@ -6,6 +6,8 @@ def main():
 
     parser.add_argument('--check', '-c', action='store_true',
                         help='Check if USB pen is present')
+    parser.add_argument('--debug', action='store_true', 
+                        help="For testing, doesn't download anything")
     parser.add_argument('--config', default='config.json', 
                         help="Path to config file")
     parser.add_argument('--filter', default=None, 
