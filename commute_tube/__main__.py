@@ -1,15 +1,19 @@
 from .commute_tube import CommuteTube
 import argparse
+import os
 
 def main():
     parser = argparse.ArgumentParser()
+
+    default_config = os.path.expanduser('~/.config/commutetube/config.json')
 
     parser.add_argument('--check', '-c', action='store_true',
                         help='Check if USB pen is present')
     parser.add_argument('--debug', action='store_true', 
                         help="For testing, doesn't download anything")
-    parser.add_argument('--config', default='config.json', 
-                        help="Path to config file")
+    parser.add_argument('--config', 
+                        default=default_config,
+                        help="Path to config file. Default is %s" % (default_config))
     parser.add_argument('--filter', default=None, 
                         help="Filter source by regexp")
 
