@@ -38,8 +38,10 @@ class CommuteTube():
         json_data = open(self.configPath)
         return json.load(json_data)
 
-    def __init__(self, configPath):
-        self.configPath = configPath
+    def __init__(self, args):
+        self.configPath = args.config
+        self.source_filter = args.filter
+
         logFormatter = logging.Formatter(
             "%(asctime)s [%(levelname)-5.5s] [%(module)-12.12s] %(message)s")
 
@@ -281,7 +283,12 @@ class CommuteTube():
             else:
                 global_opts = {}
 
-            for source in self.config['source']:
+            sources = self.config['source']
+
+            if self.source_filter:
+                sources = [source for source in sources if source["description"] == self.source_filter]
+
+            for source in sources:
                 try:
                     if source.get('deactivated'):
                         self.log.info("Source %s is deactivated", source.get('description'))
