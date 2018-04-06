@@ -1,7 +1,7 @@
 from commute_tube import CommuteTube
 import argparse
 
-if __name__ == '__main__':
+def main():
     parser = argparse.ArgumentParser()
 
     parser.add_argument('--check', '-c', action='store_true',
@@ -15,3 +15,6 @@ if __name__ == '__main__':
         ct.check_for_pen()
     else:
         ct.main()
+
+if __name__ == "__main__":
+    main()
