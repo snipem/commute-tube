@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
-from __future__ import division
+
 from youtube_dl import YoutubeDL
 from youtube_dl import version as YoutubeDL_version
 from youtube_dl.utils import match_filter_func
 
-import file_utils
+from . import file_utils
 import copy
 
 import os
@@ -115,7 +115,7 @@ class CommuteTube():
         self.log.debug("Shellscript output: " + out)
 
         urls = out.split("\n")
-        urls = filter(lambda a: a != '', urls)
+        urls = [a for a in urls if a != '']
 
         return urls
 
@@ -166,7 +166,7 @@ class CommuteTube():
         ydl.params['logger'] = self.ydlLog
 
         outtmpl = self.pathToDownloadFolder + "/" + prefix + \
-            u'%(uploader)s-%(title)s.%(ext)s'
+            '%(uploader)s-%(title)s.%(ext)s'
 
         if 'outtmpl' not in ydl.params:
             ydl.params['outtmpl'] = outtmpl
@@ -291,7 +291,7 @@ class CommuteTube():
                         if (filenames is not None):
                             downloadedFiles + downloadedFiles + filenames
 
-                except Exception, e:
+                except Exception as e:
                     self.log.error(
                         "Error while processing source. Message: '" +
                         e.message + "'")
@@ -327,7 +327,7 @@ class CommuteTube():
             shutil.copyfile(self.logFile, logFileDestination)
             self.log.debug("Log file has been copied to " + logFileDestination)
 
-        except Exception, e:
+        except Exception as e:
             self.log.exception(e)
             raise e
         finally:

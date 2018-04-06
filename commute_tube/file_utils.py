@@ -26,7 +26,7 @@ def mount_usb(path):
     """
     try:
         subprocess.check_call(["mount", path])
-    except Exception, e:
+    except Exception as e:
         log.exception(e)
         return False
     return True
@@ -38,7 +38,7 @@ def unmount_usb(path):
     """
     try:
         subprocess.check_call(["umount", path])
-    except Exception, e:
+    except Exception as e:
         log.exception(e)
         return False
     return True

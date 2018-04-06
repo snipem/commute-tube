@@ -1,4 +1,4 @@
-from commute_tube import CommuteTube
+from .commute_tube import CommuteTube
 import argparse
 
 def main():

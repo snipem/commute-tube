@@ -10,5 +10,10 @@ setup(
         "console_scripts": [
             "commutetube=commute_tube.__main__:main"
         ]
-    }
+    },
+    install_requires = [
+        "youtube_dl",
+        "humanfriendly"
+    ]
+
 )
