@@ -16,6 +16,10 @@ import shutil
 import ntpath
 import subprocess
 
+class CommuteTubeLoggingAdapter(logging.LoggerAdapter):
+    def process(self, msg, kwargs):
+        return '[%s] %s' % (self.extra['description'], msg), kwargs
+
 class CommuteTube():
 
     configPath = None
@@ -37,16 +41,18 @@ class CommuteTube():
     def __init__(self, configPath):
         self.configPath = configPath
         logFormatter = logging.Formatter(
-            "%(asctime)s [%(levelname)-5.5s] [%(module)-12.12s]  %(message)s")
+            "%(asctime)s [%(levelname)-5.5s] [%(module)-12.12s] %(message)s")
+
         rootLogger = logging.getLogger()
         rootLogger.setLevel(logging.DEBUG)
 
         fileHandler = logging.FileHandler(self.logFile, mode='w')
         fileHandler.setFormatter(logFormatter)
-        rootLogger.addHandler(fileHandler)
 
         consoleHandler = logging.StreamHandler()
         consoleHandler.setFormatter(logFormatter)
+
+        rootLogger.addHandler(fileHandler)
         rootLogger.addHandler(consoleHandler)
 
         self.log = logging
@@ -129,7 +135,9 @@ class CommuteTube():
         if 'description' in source:
             sourceDescription = source['description'].decode()
 
-        self.log.info(
+        adapter = CommuteTubeLoggingAdapter(self.log, {'description': sourceDescription})
+
+        adapter.info(
             "Processing source: '" + sourceDescription
             + "' Url: '" + sourceUrl + "'")
 
@@ -163,12 +171,12 @@ class CommuteTube():
         if 'outtmpl' not in ydl.params:
             ydl.params['outtmpl'] = outtmpl
         elif not (ydl.params['outtmpl'].startswith(self.pathToDownloadFolder)):
-            self.log.info("Prefixing custom set outtmpl with '" + self.pathToDownloadFolder + "/" + prefix + "'")
+            adapter.info("Prefixing custom set outtmpl with '" + self.pathToDownloadFolder + "/" + prefix + "'")
             ydl.params['outtmpl'] = self.pathToDownloadFolder + "/" + prefix + \
             ydl.params['outtmpl']
 
         if self.debug is True:
-            self.log.debug(
+            adapter.debug(
                 "All downloads will be simulated since this is debug mode")
             ydl.params['simulate'] = True
 
