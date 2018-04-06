@@ -94,5 +94,5 @@ def files_are_different(src, dest):
 def write_playlist(pathToDownloadFolder, files, name):
     """Writes a playlist consisting of all files given as parameter"""
     f = open(pathToDownloadFolder + '/' + name + '.m3u', 'w')
-    f.write("\n".join(files).encode('UTF-8'))
+    f.write("\n".join(files))
 

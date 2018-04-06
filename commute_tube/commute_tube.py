@@ -111,11 +111,14 @@ class CommuteTube():
         self.log.info(
             "Processing shellscript: '" + shellscript + "'")
 
-        out = subprocess.Popen(["bash", "-c", shellscript],
-                               stdout=subprocess.PIPE).communicate()[0]
-        self.log.debug("Shellscript output: " + out)
+        out = subprocess.Popen(["bash", "-c", shellscript], stdin=subprocess.PIPE, stdout=subprocess.PIPE).communicate()
 
-        urls = out.split("\n")
+        #TODO This should be safer
+        response = str(out[0].decode("UTF-8"))
+
+        self.log.debug("Shellscript output: '%s'" % response)
+
+        urls = response.split("\n")
         urls = [a for a in urls if a != '']
 
         return urls
@@ -130,11 +133,11 @@ class CommuteTube():
         ydl = YoutubeDL()
         ydl.add_default_info_extractors()
 
-        sourceUrl = source['url'].decode()
+        sourceUrl = source['url']
         sourceDescription = ""
 
         if 'description' in source:
-            sourceDescription = source['description'].decode()
+            sourceDescription = source['description']
 
         adapter = CommuteTubeLoggingAdapter(self.log, {'description': sourceDescription})
 
@@ -191,10 +194,10 @@ class CommuteTube():
         copied
         """
 
-        sourcePath = source['path'].decode()
+        sourcePath = source['path']
         sourceDescription = ""
         if 'description' in source:
-            sourceDescription = source['description'].decode()
+            sourceDescription = source['description']
 
         self.log.info(
             "Processing path: '" + sourceDescription +
@@ -299,8 +302,7 @@ class CommuteTube():
 
                 except Exception as e:
                     self.log.error(
-                        "Error while processing source. Message: '" +
-                        e.message + "'")
+                        "Error while processing source. Message: '%s'" % e)
                     self.log.exception(e)
 
             filesAfter = os.listdir(self.pathToDownloadFolder)
