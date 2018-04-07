@@ -19,7 +19,7 @@ def main():
                         default=default_download_archive,
                         help="Path to download archive. Default is %s" % (default_download_archive))
     parser.add_argument('--filter', default=None, 
-                        help="Filter source by regexp")
+                        help="Filter source by description")
 
     args = parser.parse_args()
     
