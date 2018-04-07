@@ -6,15 +6,32 @@
     "configurations": [
 
         {
-            "name": "Python: CommuteTube",
+            "name": "Python: CommuteTube All",
             "type": "python",
             "request": "launch",
-            "pythonPath": "~/.pyenv/commutetubepy2/bin/python",
+            "pythonPath": "~/.pyenv/commutetubepy3/bin/python",
             "envFile": "${workspaceFolder}/.env",
             "module": "commute_tube",
             "args": [
+                "--debug",
+                "--config",
+                "config.example.json"
+            ],
+            "program": "${file}"
+        },
+        {
+            "name": "Python: CommuteTube Specific",
+            "type": "python",
+            "request": "launch",
+            "pythonPath": "~/.pyenv/commutetubepy3/bin/python",
+            "envFile": "${workspaceFolder}/.env",
+            "module": "commute_tube",
+            "args": [
+                "--debug",
                 "--config",
                 "config.example.json",
+                "--filter",
+                "Shellscript that lists youtube-dl urls line by line",
             ],
             "program": "${file}"
         }
