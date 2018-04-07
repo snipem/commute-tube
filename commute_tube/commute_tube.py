@@ -26,6 +26,7 @@ class CommuteTube():
     penPath = ""
     downloadFolder = ""
     pathToDownloadFolder = ""
+    download_archive = None
     logFile = "commute-tube.log"
     mountAndUnmount = True
 
@@ -38,6 +39,7 @@ class CommuteTube():
         self.configPath = args.config
         self.source_filter = args.filter
         self.debug = args.debug
+        self.download_archive = args.download_archive
 
         logFormatter = logging.Formatter(
             "%(asctime)s [%(levelname)-5.5s] [%(module)-12.12s] %(message)s")
@@ -156,7 +158,7 @@ class CommuteTube():
         if 'ignoreerrors' not in ydl.params:
             ydl.params['ignoreerrors'] = True
         if 'download_archive' not in ydl.params:
-            ydl.params['download_archive'] = "already_downloaded.txt"
+            ydl.params['download_archive'] = self.download_archive
         if 'prefix' in ydl.params:
             prefix = ydl.params['prefix']
 

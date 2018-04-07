@@ -21,6 +21,8 @@ In addition to the basic youtube-dl it is possible to set the value `shellscript
 #### File copy support
 Basic files on your host file system are also supported. Use the `path` element for specifying a file to the USB pen. In order to avoid re copying of already copied files, files are checked for their checksum.
 
+#### Changes to older versions
+Both `config.json` and `already_downloaded.txt` are now stored in `$HOME/.config/commutetube/`. Their location can also be changed via command line arguments.
 
 Best Practices
 --------------
