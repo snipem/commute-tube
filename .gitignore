@@ -25,3 +25,5 @@ commute-tube.log.html
 
 /build
 MANIFEST
+
+.pypirc
