@@ -9,7 +9,7 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as f:
 
 setup(
     name='commute-tube',
-    version='0.13dev',
+    version='1.5',
     packages=['commute_tube',],
     url='https://github.com/snipem/commute-tube',
     license='GPL 3.0',

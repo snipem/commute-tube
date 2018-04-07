@@ -10,7 +10,13 @@ Alternatively, it is possible to just download to a folder and synch this folder
 
 ## Installation
 
-Run `pip install .` in the checked out folder.
+### End User
+
+Run `pip install commute-tube`.
+
+### Development
+
+Run `pip install -e .` in the checked out folder.
 
 ## Running
 
