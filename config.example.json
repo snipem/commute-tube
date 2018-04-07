@@ -35,7 +35,7 @@
         },
         {
             "format" : "1080p60fps",
-            "shellscript" : "sh scripts/gamersyde.sh",
+            "shellscript" : "sh ~/git/scripts/gamersyde.sh",
             "prefix" : "Gamersyde_",
             "description" : "Shellscript that lists youtube-dl urls line by line"
         },
