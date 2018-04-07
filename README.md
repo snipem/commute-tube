@@ -4,7 +4,7 @@ commute-tube is your friend on your daily commute. It will download videos of yo
 
 I made this tool because I was getting a new job with a daily commute via train attached. On that train ride no cellular network nor wifi was available. Despite wifi was introduced to the trains in the mean time, commute-tube still holds up by giving me instant access to the videos I want to watch without thinking about bandwidth and spinning loading wheels.
 
-commute-tube is a tool written in Python and should be run in a headless environment such as a server with a USB pen attached. It will look for your USB pen, tries to mount it, download your configured content and unmount the pen afterwards. The only thing that should be done regularly is to plug in your pen after work and catch it before you leave the house. 
+commute-tube is a tool written in Python and should be run in a headless environment such as a server with a USB pen attached. It will look for your USB pen, tries to mount it, download your configured content and unmount the pen afterwards. The only thing that should be done regularly is to plug in your pen after work and catch it before you leave the house.
 
 Alternatively, it is possible to just download to a folder and synch this folder via rsynch to your laptop or smart device.
 
@@ -60,7 +60,7 @@ Both `config.json` and `already_downloaded.txt` are now stored in `$HOME/.config
 
 Here are some best practices listed that I've used on my daily commute ever since creating commute-tube.
 
-### Running commute-tube once every night ###
+### Running commute-tube once every night
 
 For my scenario I've created a [Jenkins](https://jenkins.io/) job that will trigger commute-tube every night at 4 am. The job does also do the following tasks and will upload the log file to an internet resource for me to monitor in case of something went wrong.
 
@@ -106,4 +106,4 @@ UUID=25E6-B035    /mnt/commuteUSB  vfat   user,noauto,rw,umask=000              
 
 #### Mounting the USB pen
 
-Even though commute-tube brings it's own functionality for mounting and unmounting USB pens, I've found this behaviour rather unreliable compared to native `mount mountpoint` and `umount mountpoint` commands of the system. 
+Even though commute-tube brings it's own functionality for mounting and unmounting USB pens, I've found this behaviour rather unreliable compared to native `mount mountpoint` and `umount mountpoint` commands of the system.

@@ -13,4 +13,5 @@ This will only work for me as the maintainer:
 Twine uses the global config file in `$HOME/.pypirc`
 
 ### Setup py
-https://github.com/pypa/sampleproject/blob/master/setup.py
+
+[Example setup.py](https://github.com/pypa/sampleproject/blob/master/setup.py)
