@@ -270,7 +270,6 @@ class CommuteTube():
             self.log.info("Remaining disk size: " + diskSizeBefore)
 
             downloadedFiles = []
-            from pprint import pprint
 
             self.log.debug(
                 "Running with YoutubeDL version as of " +
