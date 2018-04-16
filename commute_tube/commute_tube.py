@@ -283,7 +283,7 @@ class CommuteTube():
             sources = self.config['source']
 
             if self.source_filter:
-                sources = [source for source in sources if source["description"] == self.source_filter]
+                sources = [source for source in sources if "description" in source and source["description"] == self.source_filter]
 
             for source in sources:
                 try:
