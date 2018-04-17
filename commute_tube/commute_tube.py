@@ -60,8 +60,11 @@ class CommuteTube():
         self.ydlLog = logging
 
         self.config = self.get_config()
-        self.penPath = self.config['pen']['penPath']
+        self.penPath = args.path if args.path else self.config['pen']['penPath']
         self.downloadFolder = self.config['pen']['downloadFolder']
+
+        if args.format:
+            self.config['pen']['common']['format'] = args.format
 
         if self.config['pen']['mountAndUnmount'] == "False":
             self.mountAndUnmount = False

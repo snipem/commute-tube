@@ -2,6 +2,7 @@ from .commute_tube import CommuteTube
 import argparse
 import os
 
+
 def main():
     parser = argparse.ArgumentParser()
 
@@ -15,6 +16,10 @@ def main():
     parser.add_argument('--config', 
                         default=default_config,
                         help="Path to config file. Default is %s" % (default_config))
+    parser.add_argument('--path', 
+                        help="Path to download folder. Default is configured in config")
+    parser.add_argument('--format', 
+                        help="Format for all sources where format is not set. Default is configured in config")
     parser.add_argument('--download-archive', 
                         default=default_download_archive,
                         help="Path to download archive. Default is %s" % (default_download_archive))
@@ -22,7 +27,6 @@ def main():
                         help="Filter source by description")
 
     args = parser.parse_args()
-    
     ct = CommuteTube(args)
 
     if (args.check):
