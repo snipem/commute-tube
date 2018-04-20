@@ -71,6 +71,8 @@ class CommuteTube():
 
         self.pathToDownloadFolder = self.penPath + "/" + self.downloadFolder
 
+        self.create_download_folder()
+
     def mount(self):
         """Mounts USB device on given path delivers True if successfull and False
         if not
@@ -184,6 +186,11 @@ class CommuteTube():
             ydl.params['simulate'] = True
 
         ydl.download([source['url']])
+
+    def create_download_folder(self):
+        """ Creates the download folder if not existing already """
+        if not os.path.isdir(self.pathToDownloadFolder):
+            os.makedirs(self.pathToDownloadFolder)
 
     def process_path(self, source):
         """Main method for processing paths
@@ -371,4 +378,5 @@ class CommuteTube():
 
     def main(self):
         self.run()
+        sys.exit(0)
 
