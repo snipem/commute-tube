@@ -224,79 +224,75 @@ class CommuteTube():
         runs all sources, one at a time, evaluates a file delta and writes playlists
         for all files and all new files.
         """
-        try:
 
-            file_utils.create_download_folder(self.pathToDownloadFolder)
+        file_utils.create_download_folder(self.pathToDownloadFolder)
 
-            diskSizeBefore = file_utils.get_remaining_disk_size_human_friendly(self.pathToDownloadFolder)
-            filesBefore = os.listdir(self.pathToDownloadFolder)
+        diskSizeBefore = file_utils.get_remaining_disk_size_human_friendly(self.pathToDownloadFolder)
+        filesBefore = os.listdir(self.pathToDownloadFolder)
 
-            self.log.info("Remaining disk size: " + diskSizeBefore)
+        self.log.info("Remaining disk size: " + diskSizeBefore)
 
-            downloadedFiles = []
+        downloadedFiles = []
 
-            self.log.debug(
-                "Running with YoutubeDL version as of " +
-                YoutubeDL_version.__version__)
+        self.log.debug(
+            "Running with YoutubeDL version as of " +
+            YoutubeDL_version.__version__)
 
-            if "common" in self.config["pen"]:
-                global_opts = self.config["pen"]["common"]
-            else:
-                global_opts = {}
+        if "common" in self.config["pen"]:
+            global_opts = self.config["pen"]["common"]
+        else:
+            global_opts = {}
 
-            sources = self.config['source']
+        sources = self.config['source']
 
-            if self.source_filter:
-                sources = [source for source in sources if "description" in source and source["description"] == self.source_filter]
+        if self.source_filter:
+            sources = [source for source in sources if "description" in source and source["description"] == self.source_filter]
 
-            for source in sources:
-                try:
-                    if source.get('deactivated'):
-                        self.log.info("Source %s is deactivated", source.get('description'))
-                    else:
-                        filenames = self.process_source(source,global_opts)
+        for source in sources:
+            try:
+                if source.get('deactivated'):
+                    self.log.info("Source %s is deactivated", source.get('description'))
+                else:
+                    filenames = self.process_source(source,global_opts)
 
-                        if (filenames is not None):
-                            downloadedFiles + downloadedFiles + filenames
+                    if (filenames is not None):
+                        downloadedFiles + downloadedFiles + filenames
 
-                except Exception as e:
-                    self.log.error(
-                        "Error while processing source. Message: '%s'" % e)
-                    self.log.exception(e)
+            except Exception as e:
+                self.log.error(
+                    "Error while processing source. Message: '%s'" % e)
+                self.log.exception(e)
 
-            filesAfter = os.listdir(self.pathToDownloadFolder)
+        filesAfter = os.listdir(self.pathToDownloadFolder)
 
-            filesDelta = sorted(list(set(filesAfter) - set(filesBefore)))
-            downloadedFiles = downloadedFiles + filesDelta
+        filesDelta = sorted(list(set(filesAfter) - set(filesBefore)))
+        downloadedFiles = downloadedFiles + filesDelta
 
-            downloadedFiles = sorted(downloadedFiles)
+        downloadedFiles = sorted(downloadedFiles)
 
-            for downloadedFile in downloadedFiles:
-                self.log.info("Downloaded: " + downloadedFile)
+        for downloadedFile in downloadedFiles:
+            self.log.info("Downloaded: " + downloadedFile)
 
-            diskSizeAfter = file_utils.get_remaining_disk_size_human_friendly(self.pathToDownloadFolder)
-            self.log.info("Remaining disk size: " + diskSizeAfter)
+        diskSizeAfter = file_utils.get_remaining_disk_size_human_friendly(self.pathToDownloadFolder)
+        self.log.info("Remaining disk size: " + diskSizeAfter)
 
-            allFiles = sorted(os.listdir(self.pathToDownloadFolder))
+        allFiles = sorted(os.listdir(self.pathToDownloadFolder))
 
-            # TODO Add configuration option here
-            if (True):
-                self.log.debug("Writing playlist for all files")
-                file_utils.write_playlist(self.pathToDownloadFolder, allFiles, "all")
+        # TODO Add configuration option here
+        if (True):
+            self.log.debug("Writing playlist for all files")
+            file_utils.write_playlist(self.pathToDownloadFolder, allFiles, "all")
 
-            # TODO Add configuration option here
-            if (True):
-                self.log.debug("Writing playlist for new files")
-                file_utils.write_playlist(self.pathToDownloadFolder, downloadedFiles, "new")
+        # TODO Add configuration option here
+        if (True):
+            self.log.debug("Writing playlist for new files")
+            file_utils.write_playlist(self.pathToDownloadFolder, downloadedFiles, "new")
 
-            # Copy log file to USB pen
-            logFileDestination = self.pathToDownloadFolder + "/" + self.logFile
-            shutil.copyfile(self.logFile, logFileDestination)
-            self.log.debug("Log file has been copied to " + logFileDestination)
+        # Copy log file to USB pen
+        logFileDestination = self.pathToDownloadFolder + "/" + self.logFile
+        shutil.copyfile(self.logFile, logFileDestination)
+        self.log.debug("Log file has been copied to " + logFileDestination)
 
-        except Exception as e:
-            self.log.exception(e)
-            raise e
 
     def check_for_pen(self):
         """This method checks if a pen is present or not. Exits with exit code 1
