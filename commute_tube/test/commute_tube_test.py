@@ -3,6 +3,7 @@ import pytest
 from commute_tube.__main__ import main, CommuteTube
 from _pytest.monkeypatch import MonkeyPatch
 import json
+import os
 import youtube_dl
 import subprocess
 import random
@@ -15,7 +16,6 @@ from urllib.parse import urlparse
 # 3. Check if mock has been called
 # 4. Check if files are in stdout
 
-base_pen_path = "/tmp/commuteUSB"
 base_download_folder = "Download"
 
 
@@ -68,7 +68,10 @@ def init_commute_tube(tmpdir, config, additional_args, to_be_downloaded_urls, ex
 
     return params
 
-def build_config(body, mount_and_unmount=False):
+def build_config(tmpdir, body, mount_and_unmount=False):
+    p = tmpdir.mkdir("penpath")
+    pen_path = p.strpath 
+
     base_config_header = """{
     "pen" : {
         "penPath" : "%s",
@@ -80,16 +83,16 @@ def build_config(body, mount_and_unmount=False):
             }
     },
     "source" : [
-    """ % (base_pen_path, mount_and_unmount, base_download_folder)
+    """ % (pen_path, mount_and_unmount, base_download_folder)
 
     base_config_footer = """    ]
     }"""
-    return base_config_header + body + base_config_footer
+    return base_config_header + body + base_config_footer, pen_path
 
 
 def test_run_basic_setting(tmpdir):
 
-    config = build_config("""
+    config, pen_path = build_config(tmpdir, """
             {
                 "url" : "https://url1.com",
                 "description" : "Url 1",
@@ -142,11 +145,67 @@ def test_run_basic_setting(tmpdir):
     # Check if format has been taken from the source if set in the source
     assert processed_params[1]["format"] == "quality_setting_from_source" 
 
-    assert processed_params[2]["outtmpl"].startswith(base_pen_path + "/" + base_download_folder + "/" + "CUSTOM_OUTTMPL_")
+    assert processed_params[2]["outtmpl"].startswith(pen_path + "/" + base_download_folder + "/" + "CUSTOM_OUTTMPL_")
 
     # Check if output path contains the base path and download folder name from the config
-    assert processed_params[0]["outtmpl"].startswith(base_pen_path + "/" + base_download_folder)
-    assert processed_params[1]["outtmpl"].startswith(base_pen_path + "/" + base_download_folder)
+    assert processed_params[0]["outtmpl"].startswith(pen_path + "/" + base_download_folder)
+    assert processed_params[1]["outtmpl"].startswith(pen_path + "/" + base_download_folder)
+
+def test_run_file_copy(tmpdir):
+
+    p = tmpdir.mkdir("source").join("testfile.mp4")
+    p.write(''.join([random.choice(string.ascii_letters + string.digits) for n in range(200)]))
+
+    src_file_path = p.strpath
+
+    config, pen_path = build_config(tmpdir, """
+            {
+                "path" : "%s",
+                "description" : "Url 1"
+            }
+    """ % src_file_path)
+
+    processed_params = init_commute_tube(
+        tmpdir=tmpdir,
+        config=config,
+        additional_args=[],
+        to_be_downloaded_urls=[
+            ]
+    )
+
+    assert processed_params == []
+
+def test_run_file_copy_but_exists_in_place(tmpdir):
+
+    p = tmpdir.mkdir("source").join("testfile.mp4")
+    p.write(''.join([random.choice(string.ascii_letters + string.digits) for n in range(200)]))
+
+    src_file_path = p.strpath
+
+    config, pen_path = build_config(tmpdir, """
+            {
+                "path" : "%s",
+                "description" : "Url 1"
+            }
+    """ % src_file_path)
+
+    target_folder = pen_path + "/" + base_download_folder
+    os.makedirs(target_folder)
+    target_file_name =  target_folder + "/testfile.mp4"
+    file = open(target_file_name, "w") 
+
+    # Generate random 200 byte content
+    file.write(''.join([random.choice(string.ascii_letters + string.digits) for n in range(200)])) 
+
+    processed_params = init_commute_tube(
+        tmpdir=tmpdir,
+        config=config,
+        additional_args=[],
+        to_be_downloaded_urls=[
+            ]
+    )
+
+    assert processed_params == []
 
 
 def test_check_pen_can_be_mounted(tmpdir):
@@ -154,11 +213,17 @@ def test_check_pen_can_be_mounted(tmpdir):
     def mock_check_call(input):
         return True
 
+    def mock_ismount(input):
+        return False
+
     monkeypatch.setattr(subprocess, 'check_call', mock_check_call)
+    monkeypatch.setattr(os.path, 'ismount', mock_ismount)
+
+    config, pen_path = build_config(tmpdir, "", mount_and_unmount=True)
 
     init_commute_tube(
         tmpdir=tmpdir,
-        config=build_config("", mount_and_unmount=True),
+        config=config,
         additional_args=[
             "--check"
         ],
@@ -171,10 +236,11 @@ def test_check_pen_can_not_be_mounted(tmpdir):
         raise subprocess.CalledProcessError(1, "Mocking error")
 
     monkeypatch.setattr(subprocess, 'check_call', mock_check_call)
+    config, pen_path = build_config(tmpdir, "", mount_and_unmount=True)
 
     init_commute_tube(
         tmpdir=tmpdir,
-        config=build_config("", mount_and_unmount=True),
+        config=config,
         additional_args=[
             "--check"
         ],

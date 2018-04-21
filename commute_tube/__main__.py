@@ -34,5 +34,3 @@ def main():
     else:
         ct.main()
 
-if __name__ == "__main__":
-    main()
