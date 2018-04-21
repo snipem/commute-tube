@@ -111,6 +111,11 @@ def test_run_basic_setting(tmpdir):
                 "outtmpl" : "CUSTOM_OUTTMPL_"
             },
             {
+                "url" : "https://url4.com",
+                "description" : "Url 4",
+                "prefix" : "PREFIX_"
+            },
+            {
                 "deactivated" : true,
                 "url" : "https://urlx.com",
                 "description" : "Url x"
@@ -138,6 +143,7 @@ def test_run_basic_setting(tmpdir):
             "https://url1.com",
             "https://url2.com",
             "https://url3.com",
+            "https://url4.com",
             "https://multiurl1.com",
             "https://multiurl2.com",
             "https://url3fromshell.com",
@@ -152,6 +158,8 @@ def test_run_basic_setting(tmpdir):
     assert processed_params[1]["format"] == "quality_setting_from_source" 
 
     assert processed_params[2]["outtmpl"].startswith(pen_path + "/" + base_download_folder + "/" + "CUSTOM_OUTTMPL_")
+
+    assert processed_params[3]["outtmpl"].startswith(pen_path + "/" + base_download_folder + "/" + "PREFIX_")
 
     # Check if output path contains the base path and download folder name from the config
     assert processed_params[0]["outtmpl"].startswith(pen_path + "/" + base_download_folder)
@@ -226,5 +234,106 @@ def test_check(tmpdir):
             "--check"
         ],
         to_be_downloaded_urls=[
+            ]
+    )
+
+def test_set_no_format_at_all(tmpdir):
+
+    config = """{
+    "pen" : {
+        "penPath" : "%s",
+        "downloadFolder" : "Download",
+        "common" : {
+            }
+    },
+    "source" : [ 
+            {
+                "url" : "https://url1.com",
+                "description" : "Url 1",
+                "playlistend" : 3
+            }
+        ]
+    }""" % (tmpdir.mkdir("penpath").strpath)
+
+    processed_params = init_commute_tube(
+        tmpdir=tmpdir,
+        config=config,
+        additional_args=[
+        ],
+        to_be_downloaded_urls=[
+            "https://url1.com"
+            ]
+    )
+
+    assert processed_params[0]["format"] == "bestvideo+bestaudio/best" 
+
+def test_set_format_by_command_flag_in_debug_mode(tmpdir):
+
+    config = """{
+    "pen" : {
+        "penPath" : "%s",
+        "downloadFolder" : "Download",
+        "common" : {
+                "format" : "common_format"
+            }
+    },
+    "source" : [ 
+            {
+                "url" : "https://url1.com",
+                "description" : "Url 1",
+                "playlistend" : 3
+            }
+        ]
+    }""" % (tmpdir.mkdir("penpath").strpath)
+
+    processed_params = init_commute_tube(
+        tmpdir=tmpdir,
+        config=config,
+        additional_args=[
+            "--debug",
+            "--format",
+            "command-line-format"
+        ],
+        to_be_downloaded_urls=[
+            "https://url1.com"
+            ]
+    )
+
+    #TODO Check for debug mode
+    assert processed_params[0]["format"] == "command-line-format" 
+
+def test_filter_source(tmpdir):
+
+    config = """{
+    "pen" : {
+        "penPath" : "%s",
+        "downloadFolder" : "Download",
+        "common" : {
+                "format" : "common_format"
+            }
+    },
+    "source" : [ 
+            {
+                "url" : "https://url1.com",
+                "description" : "Url 1",
+                "playlistend" : 3
+            },
+            {
+                "url" : "https://url2.com",
+                "description" : "Url 2",
+                "playlistend" : 3
+            }
+        ]
+    }""" % (tmpdir.mkdir("penpath").strpath)
+
+    processed_params = init_commute_tube(
+        tmpdir=tmpdir,
+        config=config,
+        additional_args=[
+            "--filter",
+            "Url 2"
+        ],
+        to_be_downloaded_urls=[
+            "https://url2.com"
             ]
     )
