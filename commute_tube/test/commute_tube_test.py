@@ -4,6 +4,7 @@ from commute_tube.__main__ import main, CommuteTube
 from _pytest.monkeypatch import MonkeyPatch
 import json
 import youtube_dl
+import subprocess
 import random
 import string
 from urllib.parse import urlparse
@@ -17,25 +18,11 @@ from urllib.parse import urlparse
 base_pen_path = "/tmp/commuteUSB"
 base_download_folder = "Download"
 
-base_config_header = """{
-    "pen" : {
-        "penPath" : "%s",
-        "mountAndUnmount" : "False",
-        "downloadFolder" : "%s",
-        "common" : {
-            "writesubtitles" : true,
-            "format" : "quality_setting_from_common"
-            }
-    },
-    "source" : [
-    """ % (base_pen_path, base_download_folder)
 
-base_config_footer = """    ]
-}"""
 
-def init_commute_tube(tmpdir, config, additional_args, to_be_downloaded_urls):
+monkeypatch = MonkeyPatch()
 
-    monkeypatch = MonkeyPatch()
+def init_commute_tube(tmpdir, config, additional_args, to_be_downloaded_urls, expected_return_code=0):
     downloaded_urls = []
 
     params = []
@@ -75,13 +62,28 @@ def init_commute_tube(tmpdir, config, additional_args, to_be_downloaded_urls):
     with pytest.raises(SystemExit) as pytest_wrapped_e:
         main()
     assert pytest_wrapped_e.type == SystemExit
-    assert pytest_wrapped_e.value.code == 0
+    assert pytest_wrapped_e.value.code == expected_return_code 
 
     assert downloaded_urls == to_be_downloaded_urls
 
     return params
 
-def build_config(body):
+def build_config(body, mount_and_unmount=False):
+    base_config_header = """{
+    "pen" : {
+        "penPath" : "%s",
+        "mountAndUnmount" : "%s",
+        "downloadFolder" : "%s",
+        "common" : {
+            "writesubtitles" : true,
+            "format" : "quality_setting_from_common"
+            }
+    },
+    "source" : [
+    """ % (base_pen_path, mount_and_unmount, base_download_folder)
+
+    base_config_footer = """    ]
+    }"""
     return base_config_header + body + base_config_footer
 
 
@@ -102,7 +104,7 @@ def test_run_basic_setting(tmpdir):
             {
                 "url" : "https://url3.com",
                 "description" : "Url 3",
-                "outtmpl" : "CUSTOM_PREFIX_"
+                "outtmpl" : "CUSTOM_OUTTMPL_"
             },
             {
                 "url": [
@@ -140,8 +142,42 @@ def test_run_basic_setting(tmpdir):
     # Check if format has been taken from the source if set in the source
     assert processed_params[1]["format"] == "quality_setting_from_source" 
 
-    assert processed_params[2]["outtmpl"].startswith(base_pen_path + "/" + base_download_folder + "/" + "CUSTOM_PREFIX_")
+    assert processed_params[2]["outtmpl"].startswith(base_pen_path + "/" + base_download_folder + "/" + "CUSTOM_OUTTMPL_")
 
     # Check if output path contains the base path and download folder name from the config
     assert processed_params[0]["outtmpl"].startswith(base_pen_path + "/" + base_download_folder)
     assert processed_params[1]["outtmpl"].startswith(base_pen_path + "/" + base_download_folder)
+
+
+def test_check_pen_can_be_mounted(tmpdir):
+
+    def mock_check_call(input):
+        return True
+
+    monkeypatch.setattr(subprocess, 'check_call', mock_check_call)
+
+    init_commute_tube(
+        tmpdir=tmpdir,
+        config=build_config("", mount_and_unmount=True),
+        additional_args=[
+            "--check"
+        ],
+        to_be_downloaded_urls=[]
+        )
+
+def test_check_pen_can_not_be_mounted(tmpdir):
+
+    def mock_check_call(input):
+        raise subprocess.CalledProcessError(1, "Mocking error")
+
+    monkeypatch.setattr(subprocess, 'check_call', mock_check_call)
+
+    init_commute_tube(
+        tmpdir=tmpdir,
+        config=build_config("", mount_and_unmount=True),
+        additional_args=[
+            "--check"
+        ],
+        to_be_downloaded_urls=[],
+        expected_return_code=1
+        )
