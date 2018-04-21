@@ -99,10 +99,8 @@ class CommuteTube():
         ydl.add_default_info_extractors()
 
         sourceUrl = source['url']
-        sourceDescription = ""
 
-        if 'description' in source:
-            sourceDescription = source['description']
+        sourceDescription = source.get("description", "")
 
         self._logsource(
             "Processing source: '" + sourceDescription
@@ -118,6 +116,7 @@ class CommuteTube():
             None if 'match_filter' not in ydl.params or ydl.params['match_filter'] is None
             else match_filter_func(ydl.params['match_filter']))
 
+        # Settings by commute tube over the standard settings, respect if the config sets them differently
         if 'format' not in ydl.params and 'format_limit' not in ydl.params:
             ydl.params['format'] = "bestvideo+bestaudio/best" if 'format' not in self.config else self.config["format"]
         if 'nooverwrites' not in ydl.params:
@@ -157,10 +156,8 @@ class CommuteTube():
         copied
         """
 
-        sourcePath = source['path']
-        sourceDescription = ""
-        if 'description' in source:
-            sourceDescription = source['description']
+        sourcePath = source.get('path')
+        sourceDescription = source.get("description", "")
 
         self.log.info(
             "Processing path: '" + sourceDescription +
@@ -238,15 +235,12 @@ class CommuteTube():
             "Running with YoutubeDL version as of " +
             YoutubeDL_version.__version__)
 
-        if "common" in self.config["pen"]:
-            global_opts = self.config["pen"]["common"]
-        else:
-            global_opts = {}
+        global_opts = self.config.get("pen").get("common", {})
 
-        sources = self.config['source']
+        sources = self.config.get("source")
 
         if self.source_filter:
-            sources = [source for source in sources if "description" in source and source["description"] == self.source_filter]
+            sources = [source for source in sources if source.get("description") == self.source_filter]
 
         for source in sources:
             try:
@@ -307,11 +301,7 @@ class CommuteTube():
             sys.exit(0)
 
     def _logsource(self, message, source=None):
-        if "description" in source:
-            log_description = source["description"] 
-        else:
-            log_description = ""
-
+        log_description = source.get("description", "")
         self.log.info("[%s] %s" % (log_description, message))
 
     def main(self):
