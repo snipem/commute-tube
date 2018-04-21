@@ -28,7 +28,6 @@ class CommuteTube():
     pathToDownloadFolder = ""
     download_archive = None
     logFile = "commute-tube.log"
-    mountAndUnmount = True
 
     def get_config(self):
         """Load config from config path"""
@@ -66,46 +65,9 @@ class CommuteTube():
         if args.format:
             self.config['pen']['common']['format'] = args.format
 
-        if self.config['pen']['mountAndUnmount'] == "False":
-            self.mountAndUnmount = False
-
         self.pathToDownloadFolder = self.penPath + "/" + self.downloadFolder
 
-        self.create_download_folder()
-
-    def mount(self):
-        """Mounts USB device on given path delivers True if successfull and False
-        if not
-        """
-        if os.path.ismount(self.penPath) == False:
-            self.log.info(
-                "There is no USB pen mounted under "
-                + self.penPath + ". Trying to mount it.")
-
-            if file_utils.mount_usb(self.penPath) == False:
-                self.log.info("Could not mount USB pen under " + self.penPath)
-                return False
-            else:
-                self.log.info(
-                    "Successfully mounted USB pen under " + self.penPath)
-        else:
-            self.log.info(
-                "There is a USB pen already mounted under " + self.penPath
-                + ". Processing further.")
-
-    def unmount(self):
-        """Unmounts USB device on given path delivers True if successfull and False
-        if not
-        """
-        if file_utils.unmount_usb(self.penPath) == True:
-            self.log.info(
-                "USB Pen under " + self.penPath + " has been unmounted")
-            return True
-        else:
-            self.log.error(
-                "USB Pen under " + self.penPath
-                + " has not been successfully unmounted")
-            return False
+        file_utils.create_download_folder(self.pathToDownloadFolder)
 
     def process_shellscript(self, source):
         """Runs a shellscript and returns it's output line by line as a list"""
@@ -187,11 +149,6 @@ class CommuteTube():
 
         ydl.download([source['url']])
 
-    def create_download_folder(self):
-        """ Creates the download folder if not existing already """
-        if not os.path.isdir(self.pathToDownloadFolder):
-            os.makedirs(self.pathToDownloadFolder)
-
     def process_path(self, source):
         """Main method for processing paths
 
@@ -263,14 +220,11 @@ class CommuteTube():
     def run(self):
         """Main method for running commute-tube
 
-        This method mounts the USB pen, calculates the disk space left before and after,
+        This method calculates the disk space left before and after,
         runs all sources, one at a time, evaluates a file delta and writes playlists
-        for all files and all new files. Finally, the USB pen will be unmounted.
+        for all files and all new files.
         """
         try:
-
-            if self.mountAndUnmount is True and self.mount() is False:
-                sys.exit(1)
 
             file_utils.create_download_folder(self.pathToDownloadFolder)
 
@@ -343,24 +297,12 @@ class CommuteTube():
         except Exception as e:
             self.log.exception(e)
             raise e
-        finally:
-            if self.mountAndUnmount is True:
-                self.unmount()
 
     def check_for_pen(self):
         """This method checks if a pen is present or not. Exits with exit code 1
         if not. Else exit code 0."""
         if os.path.ismount(self.penPath) == False:
             self.log.info("USB Pen is not mounted under " + self.penPath)
-            if file_utils.mount_usb(self.penPath) == True:
-                self.log.info("USB Pen has been successfully mounted")
-            else:
-                sys.exit(1)
-
-            if file_utils.unmount_usb(self.penPath) == True:
-                self.log.info("USB Pen has been successfully unmounted")
-            else:
-                sys.exit(1)
 
             self.log.info("USB Pen is present and able to be mounted")
             sys.exit(0)

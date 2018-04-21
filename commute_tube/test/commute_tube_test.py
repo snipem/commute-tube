@@ -2,8 +2,8 @@ import sys
 import pytest
 from commute_tube.__main__ import main, CommuteTube
 from _pytest.monkeypatch import MonkeyPatch
-import json
 import os
+import simplejson
 import youtube_dl
 import subprocess
 import random
@@ -17,7 +17,6 @@ from urllib.parse import urlparse
 # 4. Check if files are in stdout
 
 base_download_folder = "Download"
-
 
 
 monkeypatch = MonkeyPatch()
@@ -47,7 +46,7 @@ def init_commute_tube(tmpdir, config, additional_args, to_be_downloaded_urls, ex
     monkeypatch.setattr(youtube_dl, 'version', "ct_test_mock")
 
     p = tmpdir.mkdir("commuteconfig").join("config.json")
-    p.write(config)
+    p.write(config.replace("\n",""))
 
     temp_conf_file = p.strpath
 
@@ -68,14 +67,13 @@ def init_commute_tube(tmpdir, config, additional_args, to_be_downloaded_urls, ex
 
     return params
 
-def build_config(tmpdir, body, mount_and_unmount=False):
+def build_config(tmpdir, body=""):
     p = tmpdir.mkdir("penpath")
     pen_path = p.strpath 
 
     base_config_header = """{
     "pen" : {
         "penPath" : "%s",
-        "mountAndUnmount" : "%s",
         "downloadFolder" : "%s",
         "common" : {
             "writesubtitles" : true,
@@ -83,11 +81,14 @@ def build_config(tmpdir, body, mount_and_unmount=False):
             }
     },
     "source" : [
-    """ % (pen_path, mount_and_unmount, base_download_folder)
+    """ % (pen_path, base_download_folder)
 
     base_config_footer = """    ]
-    }"""
-    return base_config_header + body + base_config_footer, pen_path
+}"""
+
+    config = base_config_header + body + base_config_footer
+
+    return config, pen_path
 
 
 def test_run_basic_setting(tmpdir):
@@ -108,6 +109,11 @@ def test_run_basic_setting(tmpdir):
                 "url" : "https://url3.com",
                 "description" : "Url 3",
                 "outtmpl" : "CUSTOM_OUTTMPL_"
+            },
+            {
+                "deactivated" : true,
+                "url" : "https://urlx.com",
+                "description" : "Url x"
             },
             {
                 "url": [
@@ -207,43 +213,18 @@ def test_run_file_copy_but_exists_in_place(tmpdir):
 
     assert processed_params == []
 
+def test_check(tmpdir):
 
-def test_check_pen_can_be_mounted(tmpdir):
+    config, pen_path = build_config(tmpdir)
 
-    def mock_check_call(input):
-        return True
+    print(config)
 
-    def mock_ismount(input):
-        return False
-
-    monkeypatch.setattr(subprocess, 'check_call', mock_check_call)
-    monkeypatch.setattr(os.path, 'ismount', mock_ismount)
-
-    config, pen_path = build_config(tmpdir, "", mount_and_unmount=True)
-
-    init_commute_tube(
+    processed_params = init_commute_tube(
         tmpdir=tmpdir,
         config=config,
         additional_args=[
             "--check"
         ],
-        to_be_downloaded_urls=[]
-        )
-
-def test_check_pen_can_not_be_mounted(tmpdir):
-
-    def mock_check_call(input):
-        raise subprocess.CalledProcessError(1, "Mocking error")
-
-    monkeypatch.setattr(subprocess, 'check_call', mock_check_call)
-    config, pen_path = build_config(tmpdir, "", mount_and_unmount=True)
-
-    init_commute_tube(
-        tmpdir=tmpdir,
-        config=config,
-        additional_args=[
-            "--check"
-        ],
-        to_be_downloaded_urls=[],
-        expected_return_code=1
-        )
+        to_be_downloaded_urls=[
+            ]
+    )

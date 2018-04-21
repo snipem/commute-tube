@@ -19,33 +19,9 @@ rootLogger.addHandler(fileHandler)
 
 log = logging
 
-def mount_usb(path):
-    """Mounts device on given path using mount command
-
-    This method will only work on Unix machines
-    """
-    try:
-        subprocess.check_call(["mount", path])
-    except Exception as e:
-        log.exception(e)
-        return False
-    return True
-
-def unmount_usb(path):
-    """Unmounts device on given path using umount command
-
-    This method will only work on Unix machines
-    """
-    try:
-        subprocess.check_call(["umount", path])
-    except Exception as e:
-        log.exception(e)
-        return False
-    return True
-
 def create_download_folder(pathToDownloadFolder):
-    """Creates download folder on configured download folder location"""
-    if os.path.exists(pathToDownloadFolder) == False:
+    """Creates download folder on configured download folder location if not already existing"""
+    if not os.path.exists(pathToDownloadFolder):
         os.mkdir(pathToDownloadFolder)
 
 def get_remaining_disk_size_human_friendly(pathToDownloadFolder):
