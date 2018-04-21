@@ -86,10 +86,7 @@ def files_are_different(src, dest):
     s.close()
     d.close()
 
-    if srcDigest == destDigest:
-        return False
-    else:
-        return True
+    return not srcDigest == destDigest
 
 def write_playlist(pathToDownloadFolder, files, name):
     """Writes a playlist consisting of all files given as parameter"""
