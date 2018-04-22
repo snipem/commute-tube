@@ -38,7 +38,9 @@ setup(
         "humanfriendly"
     ],
     setup_requires = [
-        "pytest-runner"
+        "pytest-runner",
+        "pytest",
+        "pytest-cov"
     ],
     tests_requires = [
         "pytest"
