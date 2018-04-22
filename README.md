@@ -1,5 +1,8 @@
 # commute-tube
 
+[![Build Status](https://travis-ci.org/snipem/commute-tube.svg?branch=master)](https://travis-ci.org/snipem/commute-tube)
+[![Coverage Status](https://coveralls.io/repos/github/snipem/commute-tube/badge.svg?branch=master)](https://coveralls.io/github/snipem/commute-tube?branch=master)
+
 commute-tube is your friend on your daily commute. It will download videos of your interest to your USB pen by night so that you're able to watch the program in bus or train. It is basically a configurable wrapper for [youtube-dl](https://rg3.github.io/youtube-dl/).
 
 I made this tool because I was getting a new job with a daily commute via train attached. On that train ride no cellular network nor wifi was available. Despite wifi was introduced to the trains in the mean time, commute-tube still holds up by giving me instant access to the videos I want to watch without thinking about bandwidth and spinning loading wheels.
