@@ -34,3 +34,4 @@ htmlcov
 cov.xml
 .coverage
 .vscode/settings.json
+.eggs

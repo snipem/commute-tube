@@ -1,4 +1,4 @@
-from distutils.core import setup
+from setuptools import setup
 from os import path
 
 here = path.abspath(path.dirname(__file__))
@@ -36,6 +36,12 @@ setup(
     install_requires = [
         "youtube_dl",
         "humanfriendly"
+    ],
+    setup_requires = [
+        "pytest-runner"
+    ],
+    tests_requires = [
+        "pytest"
     ],
     project_urls={  # Optional
         'Bug Reports': 'https://github.com/snipem/commute-tube/issues',
