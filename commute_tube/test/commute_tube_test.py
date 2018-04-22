@@ -16,7 +16,6 @@ from urllib.parse import urlparse
 
 base_download_folder = "Download"
 
-
 monkeypatch = MonkeyPatch()
 
 
@@ -36,13 +35,17 @@ def init_commute_tube(tmpdir, config, additional_args, to_be_downloaded_urls, ex
         downloaded_urls.append(source[0])
         params.append(ytdl.params)
 
-        # Fake a downloaded file to destination
-        fake_filename = urlparse(source[0]).hostname + ".mp4"
-        download_path = ytdl.params['outtmpl'].split("%")[0]
-        file = open(download_path + fake_filename, "w")
+        if not ytdl.params.get("simulate"):
 
-        # Generate random 200 byte content
-        file.write(''.join([random.choice(string.ascii_letters + string.digits) for n in range(200)]))
+            # Fake a downloaded file to destination
+            fake_filename = urlparse(source[0]).hostname + ".mp4"
+            download_path = ytdl.params['outtmpl'].split("%")[0]
+            file = open(download_path + fake_filename, "w")
+
+            # Generate random 200 byte content
+            file.write(''.join([random.choice(string.ascii_letters + string.digits) for n in range(200)]))
+        else:
+            logger.warn("[Mockdownload] Only debugging since simulate flag is set")
 
     monkeypatch.setattr(youtube_dl.YoutubeDL, 'download', mockdownload)
     monkeypatch.setattr(youtube_dl, 'version', "ct_test_mock")
@@ -174,19 +177,41 @@ def test_run_basic_setting(tmpdir):
     assert processed_params[1]["outtmpl"].startswith(pen_path + "/" + base_download_folder)
 
 
-def test_run_file_copy(tmpdir):
+def test_run_file_copy_one_file_does_not_exist_one_file_does(tmpdir):
+    """ Check if a file has been copied and if a file is already existing, not being copied """
 
-    p = tmpdir.mkdir("source").join("testfile.mp4")
-    p.write(''.join([random.choice(string.ascii_letters + string.digits) for n in range(200)]))
+    temp = tmpdir.mkdir("source")
+    p = temp.join("testfile.mp4")
+    
+    random_string = ''.join([random.choice(string.ascii_letters + string.digits) for n in range(200)])
+
+    p.write(random_string)
 
     src_file_path = p.strpath
+
+    p = temp.join("already_there.mp4")
+    p.write(random_string)
+
+    src_file2_path = p.strpath
 
     config, pen_path = build_config(tmpdir, """
             {
                 "path" : "%s",
-                "description" : "Url 1"
+                "description" : "File which is not already there"
+            },
+            {
+                "path" : "%s",
+                "description" : "File which is already there"
             }
-    """ % src_file_path)
+    """ % (src_file_path, src_file2_path))
+
+    # Write file with appendix to detect later if it was changed or not.
+    # Commute tube does only check the first 100 bytes for performance
+    # reasons. This logic exploits this logic. 
+
+    os.mkdir(pen_path + "/" + base_download_folder)
+    with open(pen_path + "/" + base_download_folder + "already_there.mp4", "w") as text_file:
+        text_file.write(random_string + "_FILE_WAS_HERE_BEFORE_APPENDIX")
 
     processed_params = init_commute_tube(
         tmpdir=tmpdir,
@@ -198,8 +223,17 @@ def test_run_file_copy(tmpdir):
 
     assert processed_params == []
 
+    assert "testfile.mp4" in os.listdir(pen_path + "/" + base_download_folder)
+    assert "already_there.mp4" in os.listdir(pen_path + "/" + base_download_folder)
 
-def test_run_file_copy_but_exists_in_place(tmpdir):
+    with open(pen_path + "/" + base_download_folder + "already_there.mp4", 'r') as tmpfile:
+        possible_unaltered_file = tmpfile.read().replace('\n', '')
+
+    assert possible_unaltered_file == random_string + "_FILE_WAS_HERE_BEFORE_APPENDIX"
+
+
+def test_run_file_copy_but_exists_in_place_and_is_different(tmpdir):
+    """ Test if a file exists and is different, file should be overwritten """
 
     p = tmpdir.mkdir("source").join("testfile.mp4")
     p.write(''.join([random.choice(string.ascii_letters + string.digits) for n in range(200)]))
@@ -233,6 +267,7 @@ def test_run_file_copy_but_exists_in_place(tmpdir):
 
 
 def test_check(tmpdir):
+    """ Test for check logic argument """
 
     config, pen_path = build_config(tmpdir)
 
@@ -250,6 +285,7 @@ def test_check(tmpdir):
 
 
 def test_set_no_format_at_all(tmpdir):
+    """ Test if standard commute-format is set if no format is set at all"""
 
     config = """{
     "pen" : {
@@ -281,6 +317,7 @@ def test_set_no_format_at_all(tmpdir):
 
 
 def test_set_format_by_command_flag_in_debug_mode(tmpdir):
+    """ Test if common format is overwritten by command flag in debug mode """
 
     config = """{
     "pen" : {
@@ -312,8 +349,8 @@ def test_set_format_by_command_flag_in_debug_mode(tmpdir):
         ]
     )
 
-    # TODO Check for debug mode
     assert processed_params[0]["format"] == "command-line-format"
+    assert processed_params[0].get("simulate")
 
 
 def test_filter_source(tmpdir):
@@ -351,3 +388,39 @@ def test_filter_source(tmpdir):
             "https://url2.com"
         ]
     )
+
+def test_check_pen_can_be_mounted_not_mounted(tmpdir):
+
+    def mock_ismount(input):
+        return False
+
+    monkeypatch.setattr(os.path, 'ismount', mock_ismount)
+
+    config, pen_path = build_config(tmpdir, "")
+
+    init_commute_tube(
+        tmpdir=tmpdir,
+        config=config,
+        additional_args=[
+            "--check"
+        ],
+        to_be_downloaded_urls=[]
+        )
+
+def test_check_pen_can_be_mounted_already_mounted(tmpdir):
+
+    def mock_ismount(input):
+        return True
+
+    monkeypatch.setattr(os.path, 'ismount', mock_ismount)
+
+    config, pen_path = build_config(tmpdir, "")
+
+    init_commute_tube(
+        tmpdir=tmpdir,
+        config=config,
+        additional_args=[
+            "--check"
+        ],
+        to_be_downloaded_urls=[]
+        )
