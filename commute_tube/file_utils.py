@@ -1,10 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 import os
-import sys
 import hashlib
-import shutil
-import subprocess
 import logging
 import humanfriendly
 
@@ -19,10 +16,12 @@ rootLogger.addHandler(fileHandler)
 
 log = logging
 
+
 def create_download_folder(pathToDownloadFolder):
     """Creates download folder on configured download folder location if not already existing"""
     if not os.path.exists(pathToDownloadFolder):
         os.mkdir(pathToDownloadFolder)
+
 
 def get_remaining_disk_size_human_friendly(pathToDownloadFolder):
     """Calculates disk size humanfriendly form
@@ -31,6 +30,7 @@ def get_remaining_disk_size_human_friendly(pathToDownloadFolder):
     """
     return humanfriendly.format_size(get_remaining_disk_size_in_byte(pathToDownloadFolder))
 
+
 def get_remaining_disk_size_in_byte(pathToDownloadFolder):
     """Calculates disk size in bytes
 
@@ -38,6 +38,7 @@ def get_remaining_disk_size_in_byte(pathToDownloadFolder):
     """
     st = os.statvfs(pathToDownloadFolder)
     return st.f_bavail * st.f_frsize
+
 
 def files_are_different(src, dest):
     """Compares the first 100 bytes of two files and returns True if different,
@@ -64,8 +65,8 @@ def files_are_different(src, dest):
 
     return not srcDigest == destDigest
 
+
 def write_playlist(pathToDownloadFolder, files, name):
     """Writes a playlist consisting of all files given as parameter"""
     f = open(pathToDownloadFolder + '/' + name + '.m3u', 'w')
     f.write("\n".join(files))
-

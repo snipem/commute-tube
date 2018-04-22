@@ -1,11 +1,9 @@
 import sys
 import pytest
-from commute_tube.__main__ import main, CommuteTube
+from commute_tube.__main__ import main
 from _pytest.monkeypatch import MonkeyPatch
 import os
-import simplejson
 import youtube_dl
-import subprocess
 import random
 import string
 from urllib.parse import urlparse
@@ -20,6 +18,7 @@ base_download_folder = "Download"
 
 
 monkeypatch = MonkeyPatch()
+
 
 def init_commute_tube(tmpdir, config, additional_args, to_be_downloaded_urls, expected_return_code=0):
     downloaded_urls = []
@@ -37,16 +36,16 @@ def init_commute_tube(tmpdir, config, additional_args, to_be_downloaded_urls, ex
         # Fake a downloaded file to destination
         fake_filename = urlparse(source[0]).hostname + ".mp4"
         download_path = ytdl.params['outtmpl'].split("%")[0]
-        file = open(download_path + fake_filename, "w") 
+        file = open(download_path + fake_filename, "w")
 
         # Generate random 200 byte content
-        file.write(''.join([random.choice(string.ascii_letters + string.digits) for n in range(200)])) 
+        file.write(''.join([random.choice(string.ascii_letters + string.digits) for n in range(200)]))
 
     monkeypatch.setattr(youtube_dl.YoutubeDL, 'download', mockdownload)
     monkeypatch.setattr(youtube_dl, 'version', "ct_test_mock")
 
     p = tmpdir.mkdir("commuteconfig").join("config.json")
-    p.write(config.replace("\n",""))
+    p.write(config.replace("\n", ""))
 
     temp_conf_file = p.strpath
 
@@ -61,15 +60,16 @@ def init_commute_tube(tmpdir, config, additional_args, to_be_downloaded_urls, ex
     with pytest.raises(SystemExit) as pytest_wrapped_e:
         main()
     assert pytest_wrapped_e.type == SystemExit
-    assert pytest_wrapped_e.value.code == expected_return_code 
+    assert pytest_wrapped_e.value.code == expected_return_code
 
     assert downloaded_urls == to_be_downloaded_urls
 
     return params
 
+
 def build_config(tmpdir, body=""):
     p = tmpdir.mkdir("penpath")
-    pen_path = p.strpath 
+    pen_path = p.strpath
 
     base_config_header = """{
     "pen" : {
@@ -148,14 +148,14 @@ def test_run_basic_setting(tmpdir):
             "https://multiurl2.com",
             "https://url3fromshell.com",
             "https://url4fromshell.com"
-            ]
+        ]
     )
 
     # Check if format has been obtained from common if not set
-    assert processed_params[0]["format"] == "quality_setting_from_common" 
-    
+    assert processed_params[0]["format"] == "quality_setting_from_common"
+
     # Check if format has been taken from the source if set in the source
-    assert processed_params[1]["format"] == "quality_setting_from_source" 
+    assert processed_params[1]["format"] == "quality_setting_from_source"
 
     assert processed_params[2]["outtmpl"].startswith(pen_path + "/" + base_download_folder + "/" + "CUSTOM_OUTTMPL_")
 
@@ -164,6 +164,7 @@ def test_run_basic_setting(tmpdir):
     # Check if output path contains the base path and download folder name from the config
     assert processed_params[0]["outtmpl"].startswith(pen_path + "/" + base_download_folder)
     assert processed_params[1]["outtmpl"].startswith(pen_path + "/" + base_download_folder)
+
 
 def test_run_file_copy(tmpdir):
 
@@ -184,10 +185,11 @@ def test_run_file_copy(tmpdir):
         config=config,
         additional_args=[],
         to_be_downloaded_urls=[
-            ]
+        ]
     )
 
     assert processed_params == []
+
 
 def test_run_file_copy_but_exists_in_place(tmpdir):
 
@@ -205,21 +207,22 @@ def test_run_file_copy_but_exists_in_place(tmpdir):
 
     target_folder = pen_path + "/" + base_download_folder
     os.makedirs(target_folder)
-    target_file_name =  target_folder + "/testfile.mp4"
-    file = open(target_file_name, "w") 
+    target_file_name = target_folder + "/testfile.mp4"
+    file = open(target_file_name, "w")
 
     # Generate random 200 byte content
-    file.write(''.join([random.choice(string.ascii_letters + string.digits) for n in range(200)])) 
+    file.write(''.join([random.choice(string.ascii_letters + string.digits) for n in range(200)]))
 
     processed_params = init_commute_tube(
         tmpdir=tmpdir,
         config=config,
         additional_args=[],
         to_be_downloaded_urls=[
-            ]
+        ]
     )
 
     assert processed_params == []
+
 
 def test_check(tmpdir):
 
@@ -234,8 +237,9 @@ def test_check(tmpdir):
             "--check"
         ],
         to_be_downloaded_urls=[
-            ]
+        ]
     )
+
 
 def test_set_no_format_at_all(tmpdir):
 
@@ -246,7 +250,7 @@ def test_set_no_format_at_all(tmpdir):
         "common" : {
             }
     },
-    "source" : [ 
+    "source" : [
             {
                 "url" : "https://url1.com",
                 "description" : "Url 1",
@@ -262,10 +266,11 @@ def test_set_no_format_at_all(tmpdir):
         ],
         to_be_downloaded_urls=[
             "https://url1.com"
-            ]
+        ]
     )
 
-    assert processed_params[0]["format"] == "bestvideo+bestaudio/best" 
+    assert processed_params[0]["format"] == "bestvideo+bestaudio/best"
+
 
 def test_set_format_by_command_flag_in_debug_mode(tmpdir):
 
@@ -277,7 +282,7 @@ def test_set_format_by_command_flag_in_debug_mode(tmpdir):
                 "format" : "common_format"
             }
     },
-    "source" : [ 
+    "source" : [
             {
                 "url" : "https://url1.com",
                 "description" : "Url 1",
@@ -296,11 +301,12 @@ def test_set_format_by_command_flag_in_debug_mode(tmpdir):
         ],
         to_be_downloaded_urls=[
             "https://url1.com"
-            ]
+        ]
     )
 
-    #TODO Check for debug mode
-    assert processed_params[0]["format"] == "command-line-format" 
+    # TODO Check for debug mode
+    assert processed_params[0]["format"] == "command-line-format"
+
 
 def test_filter_source(tmpdir):
 
@@ -312,7 +318,7 @@ def test_filter_source(tmpdir):
                 "format" : "common_format"
             }
     },
-    "source" : [ 
+    "source" : [
             {
                 "url" : "https://url1.com",
                 "description" : "Url 1",
@@ -335,5 +341,5 @@ def test_filter_source(tmpdir):
         ],
         to_be_downloaded_urls=[
             "https://url2.com"
-            ]
+        ]
     )

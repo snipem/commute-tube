@@ -16,6 +16,7 @@ import shutil
 import ntpath
 import subprocess
 
+
 class CommuteTube():
 
     configPath = None
@@ -78,7 +79,7 @@ class CommuteTube():
 
         out = subprocess.Popen(["bash", "-c", shellscript], stdin=subprocess.PIPE, stdout=subprocess.PIPE).communicate()
 
-        #TODO This should be safer
+        # TODO This should be safer
         response = str(out[0].decode("UTF-8"))
 
         self.log.debug("Shellscript output: '%s'" % response)
@@ -103,8 +104,8 @@ class CommuteTube():
         sourceDescription = source.get("description", "")
 
         self._logsource(
-            "Processing source: '" + sourceDescription
-            + "' Url: '" + sourceUrl + "'", source)
+            "Processing source: '" + sourceDescription +
+            "' Url: '" + sourceUrl + "'", source)
 
         # Merge local parameters with global ones
         ydl.params = copy.copy(global_opts)
@@ -139,7 +140,7 @@ class CommuteTube():
         elif not (ydl.params['outtmpl'].startswith(self.pathToDownloadFolder)):
             self._logsource("Prefixing custom set outtmpl with '" + self.pathToDownloadFolder + "/" + prefix + "'", source)
             ydl.params['outtmpl'] = self.pathToDownloadFolder + "/" + prefix + \
-            ydl.params['outtmpl']
+                ydl.params['outtmpl']
 
         if self.debug:
             self._logsource(
@@ -184,7 +185,6 @@ class CommuteTube():
                 " has not been copied," +
                 " was already in place with same 100 byte digest")
 
-
     def process_source(self, source, global_opts):
         """Main method for processing sources
 
@@ -194,15 +194,15 @@ class CommuteTube():
 
         filenames = []
 
-        #TODO Use get() instead of direct access of fields
+        # TODO Use get() instead of direct access of fields
         if "url" in source and not isinstance(source['url'], list):
-            filenames.append(self.process_url(source,global_opts))
+            filenames.append(self.process_url(source, global_opts))
         elif "url" in source and isinstance(source['url'], list):
             self.log.info("Downloading multiple urls")
             for url in source['url']:
                 urls_source = copy.copy(source)
                 urls_source['url'] = url
-                filenames.append(self.process_url(urls_source,global_opts))
+                filenames.append(self.process_url(urls_source, global_opts))
         elif "path" in source:
             filenames.append(self.process_path(source))
         elif "shellscript" in source:
@@ -210,7 +210,7 @@ class CommuteTube():
             for url in urls:
                 shellscript_source = copy.copy(source)
                 shellscript_source['url'] = url
-                filenames.append(self.process_url(shellscript_source,global_opts))
+                filenames.append(self.process_url(shellscript_source, global_opts))
 
         return filenames
 
@@ -247,7 +247,7 @@ class CommuteTube():
                 if source.get('deactivated'):
                     self.log.info("Source %s is deactivated", source.get('description'))
                 else:
-                    filenames = self.process_source(source,global_opts)
+                    filenames = self.process_source(source, global_opts)
 
                     if (filenames is not None):
                         downloadedFiles + downloadedFiles + filenames
@@ -287,11 +287,10 @@ class CommuteTube():
         shutil.copyfile(self.logFile, logFileDestination)
         self.log.debug("Log file has been copied to " + logFileDestination)
 
-
     def check_for_pen(self):
         """This method checks if a pen is present or not. Exits with exit code 1
         if not. Else exit code 0."""
-        if os.path.ismount(self.penPath) == False:
+        if not os.path.ismount(self.penPath):
             self.log.info("USB Pen is not mounted under " + self.penPath)
 
             self.log.info("USB Pen is present and able to be mounted")
@@ -307,4 +306,3 @@ class CommuteTube():
     def main(self):
         self.run()
         sys.exit(0)
-
