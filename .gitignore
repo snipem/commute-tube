@@ -27,3 +27,7 @@ commute-tube.log.html
 MANIFEST
 
 .pypirc
+.history
+htmlcov
+.cache
+.pytest_cache

@@ -110,5 +110,5 @@ In earlier versions commute-tube brang it's own functionality for mounting and u
 
     mount mountpoint &&
     commute-tube
-    unmount mountpoint || 
+    unmount mountpoint ||
     echo "Unable to unmount"
