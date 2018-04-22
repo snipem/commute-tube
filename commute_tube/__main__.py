@@ -11,19 +11,19 @@ def main():
 
     parser.add_argument('--check', '-c', action='store_true',
                         help='Check if USB pen is present')
-    parser.add_argument('--debug', action='store_true', 
+    parser.add_argument('--debug', action='store_true',
                         help="For testing, doesn't download anything")
-    parser.add_argument('--config', 
+    parser.add_argument('--config',
                         default=default_config,
                         help="Path to config file. Default is %s" % (default_config))
-    parser.add_argument('--path', 
+    parser.add_argument('--path',
                         help="Path to download folder. Default is configured in config")
-    parser.add_argument('--format', 
+    parser.add_argument('--format',
                         help="Format for all sources where format is not set. Default is configured in config")
-    parser.add_argument('--download-archive', 
+    parser.add_argument('--download-archive',
                         default=default_download_archive,
                         help="Path to download archive. Default is %s" % (default_download_archive))
-    parser.add_argument('--filter', default=None, 
+    parser.add_argument('--filter', default=None,
                         help="Filter source by description")
 
     args = parser.parse_args()
@@ -33,4 +33,3 @@ def main():
         ct.check_for_pen()
     else:
         ct.main()
-
