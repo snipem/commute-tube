@@ -29,6 +29,9 @@ def init_commute_tube(tmpdir, config, additional_args, to_be_downloaded_urls, ex
         logger = ytdl.params['logger']
         logger.debug("[Mockdownload] Passed parameters: %s" % ytdl.params)
 
+        if source[0] == "https://malformedsource.com":
+            raise Exception("Provoked Exception")
+
         # Extract the submitted information for later processing
         downloaded_urls.append(source[0])
         params.append(ytdl.params)
@@ -114,6 +117,11 @@ def test_run_basic_setting(tmpdir):
                 "url" : "https://url4.com",
                 "description" : "Url 4",
                 "prefix" : "PREFIX_"
+            },
+            {
+                "" : true,
+                "url" : "https://malformedsource.com",
+                "description" : "Malformed, log but don't quit"
             },
             {
                 "deactivated" : true,
