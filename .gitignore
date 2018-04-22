@@ -31,3 +31,6 @@ MANIFEST
 htmlcov
 .cache
 .pytest_cache
+cov.xml
+.coverage
+.vscode/settings.json
