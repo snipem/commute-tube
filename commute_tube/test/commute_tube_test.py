@@ -210,7 +210,7 @@ def test_run_file_copy_one_file_does_not_exist_one_file_does(tmpdir):
     # reasons. This logic exploits this logic. 
 
     os.mkdir(pen_path + "/" + base_download_folder)
-    with open(pen_path + "/" + base_download_folder + "already_there.mp4", "w") as text_file:
+    with open(pen_path + "/" + base_download_folder + "/already_there.mp4", "w") as text_file:
         text_file.write(random_string + "_FILE_WAS_HERE_BEFORE_APPENDIX")
 
     processed_params = init_commute_tube(
@@ -226,7 +226,7 @@ def test_run_file_copy_one_file_does_not_exist_one_file_does(tmpdir):
     assert "testfile.mp4" in os.listdir(pen_path + "/" + base_download_folder)
     assert "already_there.mp4" in os.listdir(pen_path + "/" + base_download_folder)
 
-    with open(pen_path + "/" + base_download_folder + "already_there.mp4", 'r') as tmpfile:
+    with open(pen_path + "/" + base_download_folder + "/already_there.mp4", 'r') as tmpfile:
         possible_unaltered_file = tmpfile.read().replace('\n', '')
 
     assert possible_unaltered_file == random_string + "_FILE_WAS_HERE_BEFORE_APPENDIX"
