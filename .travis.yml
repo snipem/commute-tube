@@ -3,7 +3,7 @@ python:
   - "3.6"
 install:
   - pip install -r test_requirements.txt
-  - pip install .
+  - pip install -e .
 # command to run tests
 script: 
   - ./coverage.sh
