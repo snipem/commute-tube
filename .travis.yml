@@ -6,6 +6,6 @@ install:
   - pip install .
 # command to run tests
 script: 
-  - py.test
+  - ./coverage.sh
 after_success:
   - coveralls
