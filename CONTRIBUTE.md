@@ -6,9 +6,7 @@
 
 This will only work for me as the maintainer:
 
-    rm dist/*.tar.gz
-    python setup.py sdist
-    python -m twine upload dist/*
+    make dist
 
 Twine uses the global config file in `$HOME/.pypirc`
 
