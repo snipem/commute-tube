@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from setuptools import setup
 from os import path
 
@@ -9,12 +10,11 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as f:
 
 setup(
     name='commute-tube',
-    version='1.5',
+    version='1.6',
     packages=['commute_tube',],
     url='https://github.com/snipem/commute-tube',
     license='GPL 3.0',
     long_description=long_description, 
-    #TODO Reupload this later to get markdown support
     long_description_content_type='text/markdown',
     author='Matthias Küch',
     author_email='halde@matthias-kuech.de',
