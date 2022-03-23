@@ -109,7 +109,7 @@ UUID=25E6-B035    /mnt/commuteUSB  vfat   user,noauto,rw,umask=000              
 
 #### Mounting the USB pen
 
-In earlier versions commute-tube brang it's own functionality for mounting and unmounting USB pens, I've found this behaviour rather unreliable compared to native `mount mountpoint` and `umount mountpoint` commands of the system. You'll be better of runnign something like:
+In earlier versions commute-tube brought it's own functionality for mounting and unmounting USB pens, I have found this behaviour rather unreliable compared to native `mount mountpoint` and `umount mountpoint` commands of the system. You will be better of running something like:
 
     mount mountpoint &&
     commute-tube
